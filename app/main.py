@@ -17,7 +17,7 @@ from app.core.crypto_audit import CryptoAuditLogger
 app = FastAPI(
     title="SeemaDrishti - National Border AI System",
     description="SIH 2026 | Ministry of Home Affairs | Team Da Vinci Code",
-    version="3.5.0"
+    version="3.6.0"
 )
 
 app.add_middleware(
@@ -54,7 +54,7 @@ async def screen_traveler(
     session_id = str(uuid.uuid4())
     doc_bytes = await document_image.read()
 
-    # Presets mapped strictly to Video Storyboard Clips
+    # Preset Overrides
     if simulated_preset == "TAMPERED":
         q_res = {"passed": True, "variance_score": 210.5, "reason": "High Resolution"}
         mrz_res = {
@@ -89,8 +89,8 @@ async def screen_traveler(
         )
         f_res = forensics.analyze_document_forensics(doc_bytes)
         f_res["tampering_detected"] = False
-        f_res["ela_score"] = 11.2
-        face_score = 74.0 # Borderline match triggering secondary desk review
+        f_res["ela_score"] = 9.2
+        face_score = 74.0
         is_mule = False
 
     else:
@@ -105,17 +105,26 @@ async def screen_traveler(
     ocr_res = ocr.extract_fields(mrz_res)
     graph_res = identity_graph.evaluate_identity_network(mrz_res.get("passport_number", "DOC"), is_mule)
 
-    # Risk Scoring Formula
+    # 1. Base Multi-Vector Calculation
     v_quality = 0.0 if q_res.get("passed") else 80.0
     v_mrz = 0.0 if mrz_res.get("valid", True) else 85.0
     v_forensics = 85.0 if f_res.get("tampering_detected") else 5.0
     v_biometrics = (100.0 - face_score) if face_score < 70.0 else (28.0 if face_score < 78.0 else 4.0)
     v_graph = 90.0 if graph_res.get("graph_detected") else 0.0
 
-    raw_risk = (0.20 * v_quality) + (0.25 * v_mrz) + (0.30 * v_forensics) + (0.15 * v_biometrics) + (0.10 * v_graph)
+    raw_risk = (0.20 * v_quality) + (0.25 * v_mrz) + (0.35 * v_forensics) + (0.10 * v_biometrics) + (0.10 * v_graph)
     total_risk = round(min(100.0, raw_risk * graph_res.get("risk_multiplier", 1.0)), 2)
 
-    # Clip 10: 3-Lane Triage Routing
+    # 2. CRITICAL SAFETY OVERRIDES (FAIL-SAFE GATES)
+    # Agar Document Tampered hai ya Mule match hua, toh AUTO_CLEAR 100% IMPOSSIBLE hai
+    if f_res.get("tampering_detected"):
+        total_risk = max(total_risk, 78.5)
+    elif not mrz_res.get("valid", True):
+        total_risk = max(total_risk, 72.0)
+    elif is_mule:
+        total_risk = max(total_risk, 88.0)
+
+    # 3. Triage Classification
     if total_risk < 25.0:
         triage = "AUTO_CLEAR"
         triage_lane = "🟢 LOW RISK → AUTO CLEAR"
@@ -129,7 +138,6 @@ async def screen_traveler(
         triage_lane = "🔴 HIGH RISK → INVESTIGATION"
         color = "RED"
 
-    # Cryptographic Audit Log (DPDP Act 2023)
     audit_entry = CryptoAuditLogger.generate_audit_record(session_id, total_risk, triage, doc_bytes)
     latency = round(time.time() - start_time, 2)
 
