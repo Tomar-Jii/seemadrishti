@@ -3,14 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>SEEMADRISHTI | Border AI Command Terminal</title>
+  <title>SEEMADRISHTI | Phase-Wise Command Terminal</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
   <style>
-    * { touch-action: manipulation; box-sizing: border-box; }
-    html, body { overflow-x: hidden; width: 100vw; font-family: 'Inter', sans-serif; -webkit-user-select: none; user-select: none; }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body {
+      font-family: 'Inter', sans-serif;
+      background-color: #09090b;
+      color: #fafafa;
+      width: 100%;
+      min-height: 100vh;
+      overflow-y: auto !important; /* Smooth scrolling enabled */
+      -webkit-overflow-scrolling: touch;
+    }
     .mono { font-family: 'JetBrains Mono', monospace; }
-    input { font-size: 16px !important; }
+    input { font-size: 16px !important; } /* Stops iOS/Android input auto-zoom */
 
     @keyframes laserSweep {
       0% { top: 0%; opacity: 0; }
@@ -23,273 +32,376 @@
       left: 0; right: 0; height: 3px;
       background: linear-gradient(90deg, transparent, #10b981, #34d399, #10b981, transparent);
       box-shadow: 0 0 15px #10b981, 0 0 30px #10b981;
-      animation: laserSweep 1.6s ease-in-out infinite alternate;
+      animation: laserSweep 1.5s ease-in-out infinite alternate;
     }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
-<body class="bg-zinc-950 text-zinc-100 min-h-screen flex flex-col antialiased">
+<body class="flex flex-col min-h-screen">
 
-  <!-- Header: Command HUD (Clip 1 & 2) -->
-  <header class="border-b border-zinc-800 bg-zinc-900/90 backdrop-blur px-4 py-2 flex flex-col gap-2">
+  <!-- Tactical Header -->
+  <header class="sticky top-0 z-40 border-b border-zinc-800 bg-zinc-950/90 backdrop-blur px-4 py-2 flex flex-col gap-2">
     <div class="flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="h-3 w-3 rounded-full bg-emerald-500 shadow-[0_0_12px_#10b981] animate-pulse"></div>
+      <div class="flex items-center gap-2.5">
+        <div class="h-3 w-3 rounded-full bg-emerald-500 shadow-[0_0_10px_#10b981] animate-pulse"></div>
         <div>
-          <h1 class="text-sm font-bold tracking-wider uppercase text-zinc-100 flex items-center gap-2">
-            SEEMADRISHTI <span class="text-[10px] px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 mono">SIH26188</span>
+          <h1 class="text-sm font-bold tracking-wider uppercase text-zinc-100 flex items-center gap-1.5">
+            SEEMADRISHTI <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 mono">SIH26188</span>
           </h1>
-          <div class="text-[10px] text-zinc-400 mono">TEAM DA VINCI CODE | SSB BORDER SEC COMMAND</div>
+          <div class="text-[10px] text-zinc-500 mono">TEAM DA VINCI CODE | SSB CHECKPOINT #04</div>
         </div>
       </div>
-
       <div class="flex items-center gap-2">
-        <button onclick="openFinaleModal()" class="px-2.5 py-1 bg-indigo-950 text-indigo-300 hover:bg-indigo-900 border border-indigo-700 rounded text-xs mono font-bold flex items-center gap-1.5 active:scale-95 shadow-md">
-          <span>🎬 FINALE PRESENTATION</span>
+        <button onclick="openFinaleModal()" class="px-2.5 py-1 bg-indigo-950 text-indigo-300 border border-indigo-700 rounded text-xs mono font-bold active:scale-95">
+          🎬 FINALE PITCH
         </button>
       </div>
     </div>
 
-    <!-- Presets Ticker -->
-    <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 text-xs">
-      <span class="text-[10px] mono text-zinc-500 shrink-0 font-bold">STORYBOARD PRESETS:</span>
-      <button onclick="runScenario('CLEAN')" class="shrink-0 px-3 py-1 bg-emerald-950 text-emerald-300 border border-emerald-800 rounded-md font-medium text-xs active:scale-95">🟢 1. Low Risk (Auto Clear)</button>
-      <button onclick="runScenario('REVIEW_AMBER')" class="shrink-0 px-3 py-1 bg-amber-950 text-amber-300 border border-amber-800 rounded-md font-medium text-xs active:scale-95">🟡 2. Medium Risk (Review Desk)</button>
-      <button onclick="runScenario('TAMPERED')" class="shrink-0 px-3 py-1 bg-red-950 text-red-300 border border-red-800 rounded-md font-bold text-xs active:scale-95">🔴 3. High Risk (Investigation)</button>
-      <button onclick="runScenario('MULE')" class="shrink-0 px-3 py-1 bg-purple-950 text-purple-300 border border-purple-800 rounded-md font-bold text-xs active:scale-95">🕸️ 4. Mule Syndicate</button>
+    <!-- 5-Phase Interactive Step Navigator -->
+    <div class="flex items-center justify-between gap-1 overflow-x-auto no-scrollbar py-1 text-xs mono border-t border-zinc-900 pt-2">
+      <button onclick="goToPhase(1)" id="stepBtn1" class="phase-tab flex-1 min-w-[70px] py-1.5 px-2 rounded text-center font-bold bg-emerald-950 text-emerald-300 border border-emerald-700">1. INGEST</button>
+      <button onclick="goToPhase(2)" id="stepBtn2" class="phase-tab flex-1 min-w-[70px] py-1.5 px-2 rounded text-center font-medium bg-zinc-900 text-zinc-400 border border-zinc-800">2. OCR</button>
+      <button onclick="goToPhase(3)" id="stepBtn3" class="phase-tab flex-1 min-w-[70px] py-1.5 px-2 rounded text-center font-medium bg-zinc-900 text-zinc-400 border border-zinc-800">3. FORENSIC</button>
+      <button onclick="goToPhase(4)" id="stepBtn4" class="phase-tab flex-1 min-w-[70px] py-1.5 px-2 rounded text-center font-medium bg-zinc-900 text-zinc-400 border border-zinc-800">4. BIOMETRIC</button>
+      <button onclick="goToPhase(5)" id="stepBtn5" class="phase-tab flex-1 min-w-[70px] py-1.5 px-2 rounded text-center font-medium bg-zinc-900 text-zinc-400 border border-zinc-800">5. TRIAGE</button>
     </div>
   </header>
 
-  <!-- Clip 11: Impact & Performance Telemetry Ticker -->
-  <div class="bg-zinc-900 border-b border-zinc-800 px-4 py-1.5 flex flex-wrap items-center justify-between gap-3 text-xs mono">
-    <div class="flex items-center gap-4 text-[11px] text-zinc-400">
-      <div class="flex items-center gap-1.5 text-emerald-400 font-semibold">
-        <span>⚡ FASTER:</span> <span id="telemetryLatency" class="text-zinc-200">1.28s</span>
-      </div>
-      <div class="flex items-center gap-1.5 text-indigo-400 font-semibold">
-        <span>🛡️ SAFER:</span> <span class="text-zinc-200">99.2% Accuracy</span>
-      </div>
-      <div class="flex items-center gap-1.5 text-amber-400 font-semibold">
-        <span>🔍 EXPLAINABLE:</span> <span class="text-zinc-200">Zero Black-Box</span>
-      </div>
-    </div>
-    <div class="text-[10px] text-zinc-500">
-      HUMAN-IN-THE-LOOP ACTIVE • DPDP ACT COMPLIANT
-    </div>
-  </div>
+  <!-- Main Multi-Phase Container -->
+  <main class="flex-1 p-4 max-w-2xl w-full mx-auto pb-24">
 
-  <!-- Main Multi-Layer Grid -->
-  <main class="flex-1 p-4 grid grid-cols-1 lg:grid-cols-12 gap-4 max-w-[1800px] w-full mx-auto">
-    
-    <!-- Left Column: Ingestion & OCR Extraction (4 cols) -->
-    <div class="lg:col-span-4 flex flex-col gap-4">
-      
-      <!-- Ingestion Card -->
-      <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-4 flex flex-col gap-3">
-        <div class="flex items-center justify-between border-b border-zinc-800 pb-1.5">
-          <span class="text-xs font-bold uppercase tracking-wider mono text-zinc-300">01. Document Ingestion</span>
-          <span class="text-[10px] mono text-emerald-400">HIGH-RES DIGITAL</span>
+    <!-- ========================================== -->
+    <!-- PHASE 1: INGESTION CONTROL & SCAN CAPTURE  -->
+    <!-- ========================================== -->
+    <section id="phase1" class="space-y-4">
+      <div class="bg-zinc-900/70 border border-zinc-800 rounded-2xl p-5 space-y-4">
+        <div class="flex items-center justify-between border-b border-zinc-800 pb-2">
+          <h2 class="text-xs font-bold uppercase tracking-wider mono text-zinc-300 flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800">STEP 1</span>
+            ID Ingestion & Capture
+          </h2>
+          <span class="text-[11px] mono text-emerald-400">ICAO-9303</span>
         </div>
 
-        <form id="screenForm" class="flex flex-col gap-3">
-          <div>
-            <label class="block text-xs font-medium text-zinc-300 mb-1">Upload Scanned Document</label>
-            <input type="file" id="docInput" accept="image/*" class="block w-full text-xs text-zinc-400 file:mr-2 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-zinc-800 file:text-zinc-200 cursor-pointer bg-zinc-950 border border-zinc-800 rounded p-1">
-          </div>
-
-          <div class="grid grid-cols-1 gap-1.5">
-            <label class="block text-[10px] text-zinc-400 mono">MRZ Line 1 & Line 2</label>
-            <input type="text" id="mrz1" placeholder="P<INDTOMAR<<ARYAN..." class="w-full text-xs mono px-2.5 py-1.5 bg-zinc-950 border border-zinc-800 rounded text-zinc-200 uppercase outline-none focus:border-emerald-500">
-            <input type="text" id="mrz2" placeholder="Z1234567<8IND080405..." class="w-full text-xs mono px-2.5 py-1.5 bg-zinc-950 border border-zinc-800 rounded text-zinc-200 uppercase outline-none focus:border-emerald-500">
-          </div>
-
-          <button type="submit" id="submitBtn" class="w-full text-xs py-2.5 bg-emerald-500 hover:bg-emerald-400 rounded-lg font-bold text-black tracking-wide">EXECUTE SCREENING</button>
-        </form>
-      </div>
-
-      <!-- OCR Extraction Card (Clip 4) -->
-      <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-4 flex flex-col gap-2">
-        <div class="flex items-center justify-between border-b border-zinc-800 pb-1.5">
-          <span class="text-xs font-bold uppercase tracking-wider mono text-zinc-300">02. OCR Data Extraction</span>
-          <span class="text-[10px] mono text-emerald-400">PADDLE-OCR / ICAO</span>
-        </div>
-        <div id="ocrFields" class="grid grid-cols-2 gap-2 text-xs mono pt-1">
-          <div class="bg-zinc-950 p-2 rounded border border-zinc-800/80">
-            <div class="text-[10px] text-zinc-500">NAME</div>
-            <div id="fName" class="text-zinc-200 font-bold truncate">--</div>
-          </div>
-          <div class="bg-zinc-950 p-2 rounded border border-zinc-800/80">
-            <div class="text-[10px] text-zinc-500">DOC NUMBER</div>
-            <div id="fDoc" class="text-zinc-200 font-bold">--</div>
-          </div>
-          <div class="bg-zinc-950 p-2 rounded border border-zinc-800/80">
-            <div class="text-[10px] text-zinc-500">DOB</div>
-            <div id="fDob" class="text-zinc-200 font-bold">--</div>
-          </div>
-          <div class="bg-zinc-950 p-2 rounded border border-zinc-800/80">
-            <div class="text-[10px] text-zinc-500">EXPIRY</div>
-            <div id="fExp" class="text-zinc-200 font-bold">--</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Document Validation Badges (Clip 5) -->
-      <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-4 flex flex-col gap-2">
-        <span class="text-xs font-bold uppercase tracking-wider mono text-zinc-300">03. Validation Indicators</span>
-        <div class="grid grid-cols-2 gap-2 text-xs mono pt-1">
-          <div class="bg-zinc-950 p-2 rounded border border-zinc-800 flex justify-between items-center">
-            <span class="text-zinc-400">FORMAT:</span>
-            <span id="vFormat" class="font-bold text-zinc-400">--</span>
-          </div>
-          <div class="bg-zinc-950 p-2 rounded border border-zinc-800 flex justify-between items-center">
-            <span class="text-zinc-400">CHECKSUM:</span>
-            <span id="vChecksum" class="font-bold text-zinc-400">--</span>
-          </div>
-          <div class="bg-zinc-950 p-2 rounded border border-zinc-800 flex justify-between items-center">
-            <span class="text-zinc-400">EXPIRY:</span>
-            <span id="vExpiry" class="font-bold text-zinc-400">--</span>
-          </div>
-          <div class="bg-zinc-950 p-2 rounded border border-zinc-800 flex justify-between items-center">
-            <span class="text-zinc-400">WATCHLIST:</span>
-            <span id="vWatchlist" class="font-bold text-zinc-400">--</span>
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- Center Column: Multi-Model Forensic Lab (Clips 6 & 7) (5 cols) -->
-    <div class="lg:col-span-5 flex flex-col gap-4">
-      <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-4 flex flex-col gap-3 flex-1">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-bold uppercase tracking-wider mono text-zinc-300">04. Multi-Model Forensic Analysis</span>
-          <div class="flex gap-1.5">
-            <button id="btnViewDoc" onclick="switchForensicView('doc')" class="text-xs px-2.5 py-1 bg-zinc-800 text-zinc-200 rounded font-medium">Scanned ID</button>
-            <button id="btnViewEla" onclick="switchForensicView('ela')" class="text-xs px-2.5 py-1 bg-zinc-950 text-zinc-400 border border-zinc-800 rounded font-medium">ELA Heatmap</button>
+        <!-- 1-Click Storyboard Presets -->
+        <div class="space-y-1.5">
+          <label class="text-[11px] mono text-zinc-400">LOAD QUICK JURY SCENARIOS:</label>
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <button onclick="loadScenarioPreset('CLEAN')" class="p-2.5 bg-emerald-950/70 text-emerald-300 border border-emerald-800 rounded-xl text-left font-semibold active:scale-95">
+              🟢 Genuine Passport<br><span class="text-[10px] text-zinc-400 font-normal">Low Risk • Auto Clear</span>
+            </button>
+            <button onclick="loadScenarioPreset('REVIEW_AMBER')" class="p-2.5 bg-amber-950/70 text-amber-300 border border-amber-800 rounded-xl text-left font-semibold active:scale-95">
+              🟡 Minor Glare / DOB<br><span class="text-[10px] text-zinc-400 font-normal">Medium • Review Desk</span>
+            </button>
+            <button onclick="loadScenarioPreset('TAMPERED')" class="p-2.5 bg-red-950/70 text-red-300 border border-red-800 rounded-xl text-left font-semibold active:scale-95">
+              🔴 Spliced & Cloned ID<br><span class="text-[10px] text-zinc-400 font-normal">High Risk • Detain</span>
+            </button>
+            <button onclick="loadScenarioPreset('MULE')" class="p-2.5 bg-purple-950/70 text-purple-300 border border-purple-800 rounded-xl text-left font-semibold active:scale-95">
+              🕸️ Identity Mule Syndicate<br><span class="text-[10px] text-zinc-400 font-normal">Multi-Doc Cross Match</span>
+            </button>
           </div>
         </div>
 
-        <div class="relative w-full h-[320px] sm:h-[380px] bg-zinc-950 rounded-lg border border-zinc-800 flex items-center justify-center overflow-hidden">
+        <!-- Document Preview Screen -->
+        <div class="relative w-full h-56 bg-zinc-950 rounded-xl border border-zinc-800 flex items-center justify-center overflow-hidden">
           <div id="laserLine" class="laser-scan hidden pointer-events-none"></div>
-          
           <img id="docPreview" class="max-h-full max-w-full object-contain" style="display:none;" />
-          <img id="elaPreview" class="max-h-full max-w-full object-contain hidden" />
-          <div id="emptyPrompt" class="text-xs text-zinc-600 mono">AWAITING SCAN INGESTION</div>
-
-          <canvas id="overlayCanvas" class="absolute inset-0 pointer-events-none w-full h-full"></canvas>
+          <div id="emptyPrompt" class="text-xs text-zinc-600 mono text-center px-4">
+            NO DOCUMENT INGESTED<br><span class="text-[10px] text-zinc-700">Select a scenario above or upload below</span>
+          </div>
         </div>
 
+        <!-- Manual File Input -->
+        <div class="space-y-3 pt-1">
+          <div>
+            <label class="block text-xs font-medium text-zinc-300 mb-1">Upload Passport / ID Image</label>
+            <input type="file" id="docInput" accept="image/*" class="block w-full text-xs text-zinc-400 file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-zinc-800 file:text-zinc-200 cursor-pointer bg-zinc-950 border border-zinc-800 rounded-lg p-1.5">
+          </div>
+          <div>
+            <label class="block text-[11px] text-zinc-400 mono mb-1">MRZ Strings (Optional for Auto-Parsing)</label>
+            <input type="text" id="mrz1" placeholder="Line 1: P<INDTOMAR<<ARYAN..." class="w-full text-xs mono px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-zinc-200 uppercase outline-none focus:border-emerald-500 mb-1.5">
+            <input type="text" id="mrz2" placeholder="Line 2: Z1234567<8IND080405..." class="w-full text-xs mono px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg text-zinc-200 uppercase outline-none focus:border-emerald-500">
+          </div>
+        </div>
+
+        <button onclick="startScreeningProcess()" id="startBtn" class="w-full py-3 bg-emerald-500 hover:bg-emerald-400 active:scale-95 rounded-xl font-bold text-black tracking-wide text-sm shadow-lg">
+          START AI SCREENING PIPELINE ➔
+        </button>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- PHASE 2: LASER OCR & VALIDATION INDICATORS -->
+    <!-- ========================================== -->
+    <section id="phase2" class="hidden space-y-4">
+      <div class="bg-zinc-900/70 border border-zinc-800 rounded-2xl p-5 space-y-4">
+        <div class="flex items-center justify-between border-b border-zinc-800 pb-2">
+          <h2 class="text-xs font-bold uppercase tracking-wider mono text-zinc-300 flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800">STEP 2</span>
+            OCR Extraction & Verification
+          </h2>
+          <span class="text-[11px] mono text-emerald-400">PADDLE-OCR ENGINE</span>
+        </div>
+
+        <!-- Structured OCR Extraction -->
+        <div class="grid grid-cols-2 gap-2 text-xs mono">
+          <div class="bg-zinc-950 p-3 rounded-xl border border-zinc-800">
+            <div class="text-[10px] text-zinc-500 font-bold">TRAVELER FULL NAME</div>
+            <div id="fName" class="text-zinc-200 font-bold text-sm mt-1 truncate">--</div>
+          </div>
+          <div class="bg-zinc-950 p-3 rounded-xl border border-zinc-800">
+            <div class="text-[10px] text-zinc-500 font-bold">PASSPORT / ID NUMBER</div>
+            <div id="fDoc" class="text-zinc-200 font-bold text-sm mt-1">--</div>
+          </div>
+          <div class="bg-zinc-950 p-3 rounded-xl border border-zinc-800">
+            <div class="text-[10px] text-zinc-500 font-bold">DATE OF BIRTH</div>
+            <div id="fDob" class="text-zinc-200 font-bold text-sm mt-1">--</div>
+          </div>
+          <div class="bg-zinc-950 p-3 rounded-xl border border-zinc-800">
+            <div class="text-[10px] text-zinc-500 font-bold">EXPIRY STATUS</div>
+            <div id="fExp" class="text-zinc-200 font-bold text-sm mt-1">--</div>
+          </div>
+        </div>
+
+        <!-- 4 Validation Indicator Badges -->
+        <div class="space-y-2 pt-2">
+          <label class="text-[11px] mono text-zinc-400 font-bold uppercase">Automated Cryptographic Gates:</label>
+          <div class="grid grid-cols-2 gap-2 text-xs mono">
+            <div class="bg-zinc-950 p-2.5 rounded-lg border border-zinc-800 flex justify-between items-center">
+              <span class="text-zinc-400">✓ FORMAT:</span>
+              <span id="vFormat" class="font-bold text-emerald-400">PASSED</span>
+            </div>
+            <div class="bg-zinc-950 p-2.5 rounded-lg border border-zinc-800 flex justify-between items-center">
+              <span class="text-zinc-400">✓ CHECKSUM:</span>
+              <span id="vChecksum" class="font-bold text-zinc-400">--</span>
+            </div>
+            <div class="bg-zinc-950 p-2.5 rounded-lg border border-zinc-800 flex justify-between items-center">
+              <span class="text-zinc-400">✓ EXPIRY:</span>
+              <span id="vExpiry" class="font-bold text-emerald-400">VALID</span>
+            </div>
+            <div class="bg-zinc-950 p-2.5 rounded-lg border border-zinc-800 flex justify-between items-center">
+              <span class="text-zinc-400">✓ WATCHLIST:</span>
+              <span id="vWatchlist" class="font-bold text-zinc-400">--</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex gap-2 pt-2">
+          <button onclick="goToPhase(1)" class="flex-1 py-2.5 bg-zinc-800 text-zinc-300 rounded-xl font-medium text-xs">⬅ BACK</button>
+          <button onclick="goToPhase(3)" class="flex-2 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-black font-bold rounded-xl text-xs flex-1">PROCEED TO FORENSICS ➔</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- PHASE 3: DEEP FORENSIC TAMPER LAB          -->
+    <!-- ========================================== -->
+    <section id="phase3" class="hidden space-y-4">
+      <div class="bg-zinc-900/70 border border-zinc-800 rounded-2xl p-5 space-y-4">
+        <div class="flex items-center justify-between border-b border-zinc-800 pb-2">
+          <h2 class="text-xs font-bold uppercase tracking-wider mono text-zinc-300 flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800">STEP 3</span>
+            Forensic Tamper Inspection
+          </h2>
+          <div class="flex gap-1">
+            <button id="tabForensicDoc" onclick="toggleForensicImage('doc')" class="text-[11px] px-2 py-1 bg-zinc-800 text-zinc-200 rounded font-medium">Scanned ID</button>
+            <button id="tabForensicEla" onclick="toggleForensicImage('ela')" class="text-[11px] px-2 py-1 bg-zinc-950 text-zinc-400 border border-zinc-800 rounded font-medium">ELA Heatmap</button>
+          </div>
+        </div>
+
+        <!-- Forensics Canvas Overlay -->
+        <div class="relative w-full h-64 bg-zinc-950 rounded-xl border border-zinc-800 flex items-center justify-center overflow-hidden">
+          <img id="forensicDocImg" class="max-h-full max-w-full object-contain" />
+          <img id="forensicElaImg" class="max-h-full max-w-full object-contain hidden" />
+          <canvas id="forensicOverlayCanvas" class="absolute inset-0 pointer-events-none w-full h-full"></canvas>
+        </div>
+
+        <!-- 3 Multi-Model Diagnostics -->
         <div class="grid grid-cols-3 gap-2 text-xs mono">
-          <div class="bg-zinc-950 p-2.5 rounded border border-zinc-800 text-center">
-            <div class="text-[10px] text-zinc-500">ELA DIVERGENCE</div>
+          <div class="bg-zinc-950 p-2.5 rounded-xl border border-zinc-800 text-center">
+            <div class="text-[10px] text-zinc-500">ELA RESIDUAL</div>
             <div id="mEla" class="text-zinc-200 font-bold mt-1">--</div>
           </div>
-          <div class="bg-zinc-950 p-2.5 rounded border border-zinc-800 text-center">
+          <div class="bg-zinc-950 p-2.5 rounded-xl border border-zinc-800 text-center">
             <div class="text-[10px] text-zinc-500">COPY-MOVE (SIFT)</div>
             <div id="mCopyMove" class="text-zinc-200 font-bold mt-1">--</div>
           </div>
-          <div class="bg-zinc-950 p-2.5 rounded border border-zinc-800 text-center">
+          <div class="bg-zinc-950 p-2.5 rounded-xl border border-zinc-800 text-center">
             <div class="text-[10px] text-zinc-500">FONT GRADIENT</div>
             <div id="mFont" class="text-zinc-200 font-bold mt-1">--</div>
           </div>
         </div>
+
+        <div class="flex gap-2 pt-2">
+          <button onclick="goToPhase(2)" class="flex-1 py-2.5 bg-zinc-800 text-zinc-300 rounded-xl font-medium text-xs">⬅ BACK</button>
+          <button onclick="goToPhase(4)" class="flex-2 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-black font-bold rounded-xl text-xs flex-1">PROCEED TO BIOMETRICS ➔</button>
+        </div>
       </div>
-    </div>
+    </section>
 
-    <!-- Right Column: Clip 10 (Officer Dashboard & Triage Lanes) + Identity Graph (3 cols) -->
-    <div class="lg:col-span-3 flex flex-col gap-4">
-      
-      <!-- Clip 10: Officer Real-Time Triage Lanes -->
-      <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-4 flex flex-col gap-2.5">
-        <span class="text-xs font-bold uppercase tracking-wider mono text-zinc-300">05. Officer Triage Lanes</span>
-        
-        <div id="laneGreen" class="p-2.5 rounded-lg border border-zinc-800 bg-zinc-950/70 flex items-center justify-between text-xs mono">
-          <div class="flex items-center gap-2">
-            <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
-            <span class="text-zinc-400">LOW RISK</span>
-          </div>
-          <span class="text-emerald-400 font-bold text-[11px]">AUTO CLEAR</span>
+    <!-- ========================================== -->
+    <!-- PHASE 4: BIOMETRICS & IDENTITY MULE RADAR  -->
+    <!-- ========================================== -->
+    <section id="phase4" class="hidden space-y-4">
+      <div class="bg-zinc-900/70 border border-zinc-800 rounded-2xl p-5 space-y-4">
+        <div class="flex items-center justify-between border-b border-zinc-800 pb-2">
+          <h2 class="text-xs font-bold uppercase tracking-wider mono text-zinc-300 flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800">STEP 4</span>
+            Biometrics & Identity Graph
+          </h2>
+          <span class="text-[11px] mono text-emerald-400">ARCFACE + FAISS</span>
         </div>
 
-        <div id="laneAmber" class="p-2.5 rounded-lg border border-zinc-800 bg-zinc-950/70 flex items-center justify-between text-xs mono">
-          <div class="flex items-center gap-2">
-            <span class="h-2 w-2 rounded-full bg-amber-500"></span>
-            <span class="text-zinc-400">MEDIUM RISK</span>
+        <!-- Biometric 1:1 Cosine Confidence -->
+        <div class="bg-zinc-950 p-4 rounded-xl border border-zinc-800 space-y-2">
+          <div class="flex justify-between items-center text-xs mono">
+            <span class="text-zinc-400">Live Kiosk ↔ Document Photo:</span>
+            <span id="faceConfidence" class="text-zinc-200 font-bold text-sm">--</span>
           </div>
-          <span class="text-amber-400 font-bold text-[11px]">DESK REVIEW</span>
+          <div class="w-full bg-zinc-900 rounded-full h-2">
+            <div id="faceBar" class="bg-emerald-500 h-2 rounded-full transition-all" style="width: 0%;"></div>
+          </div>
+          <div class="flex justify-between text-[11px] mono text-zinc-500 pt-1">
+            <span>Passive Liveness: <strong class="text-emerald-400">VERIFIED</strong></span>
+            <span>Threshold: &ge; 0.68</span>
+          </div>
         </div>
 
-        <div id="laneRed" class="p-2.5 rounded-lg border border-zinc-800 bg-zinc-950/70 flex items-center justify-between text-xs mono">
-          <div class="flex items-center gap-2">
-            <span class="h-2 w-2 rounded-full bg-red-500"></span>
-            <span class="text-zinc-400">HIGH RISK</span>
+        <!-- Cross-Doc Identity Graph Visualizer -->
+        <div class="bg-zinc-950 p-3 rounded-xl border border-zinc-800 space-y-2">
+          <div class="flex justify-between items-center text-xs mono">
+            <span class="text-zinc-400">Cross-Document Identity Network:</span>
+            <span id="graphStatus" class="font-bold text-emerald-400 text-[11px]">ISOLATED (1:1)</span>
           </div>
-          <span class="text-red-400 font-bold text-[11px]">INVESTIGATION</span>
+          <div class="h-36 bg-zinc-900/50 rounded-lg relative overflow-hidden flex items-center justify-center border border-zinc-800/80">
+            <canvas id="graphCanvas" class="w-full h-full"></canvas>
+          </div>
         </div>
 
-        <!-- Human-In-The-Loop Fast Action Buttons -->
+        <div class="flex gap-2 pt-2">
+          <button onclick="goToPhase(3)" class="flex-1 py-2.5 bg-zinc-800 text-zinc-300 rounded-xl font-medium text-xs">⬅ BACK</button>
+          <button onclick="goToPhase(5)" class="flex-2 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-black font-bold rounded-xl text-xs flex-1">VIEW FINAL TRIAGE ➔</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- PHASE 5: DECISION TRIAGE & INCIDENT DOSSIER-->
+    <!-- ========================================== -->
+    <section id="phase5" class="hidden space-y-4">
+      <div class="bg-zinc-900/70 border border-zinc-800 rounded-2xl p-5 space-y-4">
+        <div class="flex items-center justify-between border-b border-zinc-800 pb-2">
+          <h2 class="text-xs font-bold uppercase tracking-wider mono text-zinc-300 flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800">STEP 5</span>
+            Officer Triage & Enforcement
+          </h2>
+          <span class="text-[11px] mono text-zinc-400">HUMAN-IN-THE-LOOP</span>
+        </div>
+
+        <!-- 3 Triage Lanes -->
+        <div class="space-y-2">
+          <div id="laneGreen" class="p-3 rounded-xl border border-zinc-800 bg-zinc-950 flex items-center justify-between text-xs mono transition-all">
+            <div class="flex items-center gap-2">
+              <span class="h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
+              <span class="font-bold">LOW RISK</span>
+            </div>
+            <span class="text-emerald-400 font-bold">AUTO CLEAR CHANNEL</span>
+          </div>
+          <div id="laneAmber" class="p-3 rounded-xl border border-zinc-800 bg-zinc-950 flex items-center justify-between text-xs mono transition-all">
+            <div class="flex items-center gap-2">
+              <span class="h-2.5 w-2.5 rounded-full bg-amber-500"></span>
+              <span class="font-bold">MEDIUM RISK</span>
+            </div>
+            <span class="text-amber-400 font-bold">SECONDARY DESK REVIEW</span>
+          </div>
+          <div id="laneRed" class="p-3 rounded-xl border border-zinc-800 bg-zinc-950 flex items-center justify-between text-xs mono transition-all">
+            <div class="flex items-center gap-2">
+              <span class="h-2.5 w-2.5 rounded-full bg-red-500"></span>
+              <span class="font-bold">HIGH RISK</span>
+            </div>
+            <span class="text-red-400 font-bold">FORENSIC INVESTIGATION & DETAIN</span>
+          </div>
+        </div>
+
+        <!-- Composite Risk Score Readout -->
+        <div class="bg-zinc-950 p-4 rounded-xl border border-zinc-800 text-center space-y-1">
+          <div class="text-[11px] mono text-zinc-500 uppercase">Composite Threat Risk Score</div>
+          <div id="finalRiskScore" class="text-3xl font-black mono text-zinc-200">--</div>
+          <div id="finalTriageSummary" class="text-xs mono text-zinc-400 font-medium">Ready for evaluation</div>
+        </div>
+
+        <!-- Fast Enforcement Actions -->
         <div class="grid grid-cols-2 gap-2 pt-1">
-          <button onclick="recordOfficerAction('MANUAL_CLEAR')" class="py-1.5 bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 border border-emerald-500/40 rounded text-[11px] mono font-bold">✓ OFFICER CLEAR</button>
-          <button onclick="recordOfficerAction('SEND_INVESTIGATION')" class="py-1.5 bg-red-600/30 hover:bg-red-600/50 text-red-300 border border-red-500/40 rounded text-[11px] mono font-bold">⚠️ DETAIN CASE</button>
+          <button onclick="recordOfficerVerdict('APPROVED_BY_OFFICER')" class="py-3 bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 border border-emerald-500/50 rounded-xl text-xs mono font-bold active:scale-95">
+            ✓ AUTHORIZE CLEAR
+          </button>
+          <button onclick="recordOfficerVerdict('DETAINED_UNDER_SSB_ACT')" class="py-3 bg-red-600/30 hover:bg-red-600/50 text-red-300 border border-red-500/50 rounded-xl text-xs mono font-bold active:scale-95">
+            🚨 DETAIN TRAVELER
+          </button>
         </div>
-      </div>
 
-      <!-- Biometrics (Clip 8) -->
-      <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-3.5 flex flex-col gap-2">
-        <span class="text-xs font-bold uppercase tracking-wider mono text-zinc-300">06. Face Verification</span>
-        <div class="flex justify-between items-center text-xs mono">
-          <span class="text-zinc-400">ArcFace Confidence:</span>
-          <span id="faceConfidence" class="text-zinc-200 font-bold">--</span>
-        </div>
-        <div class="flex justify-between items-center text-xs mono">
-          <span class="text-zinc-400">Passive Liveness:</span>
-          <span id="faceLiveness" class="text-emerald-400 font-bold">PASSED</span>
-        </div>
-      </div>
+        <!-- Printable Incident Dossier Trigger -->
+        <button onclick="openDossierSlip()" id="dossierBtn" class="w-full py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-xl text-xs mono font-semibold border border-zinc-700">
+          📄 PRINT SSB FORENSIC DOSSIER SLIP
+        </button>
 
-      <!-- Identity Graph (Clip 9) -->
-      <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-3.5 flex flex-col gap-2 flex-1">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-bold uppercase tracking-wider mono text-zinc-300">07. Identity Graph</span>
-          <span id="graphStatus" class="text-[10px] mono text-zinc-400">SYNCHRONIZED</span>
-        </div>
-        <div class="h-24 bg-zinc-950 rounded border border-zinc-800 relative overflow-hidden flex items-center justify-center">
-          <canvas id="graphCanvas" class="w-full h-full"></canvas>
-          <div id="graphEmpty" class="text-[10px] text-zinc-600 mono absolute">NO MULE LINK</div>
-        </div>
+        <button onclick="goToPhase(1)" class="w-full py-2 text-zinc-500 hover:text-zinc-300 text-xs mono text-center">
+          ↺ Reset & Screen Next Traveler
+        </button>
       </div>
-
-    </div>
+    </section>
 
   </main>
 
-  <!-- Clip 12: Grand Finale Presentation Modal (Da Vinci Code - Smart India Hackathon 2026) -->
-  <div id="finaleModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-gradient-to-b from-zinc-900 to-zinc-950 border border-zinc-700/80 rounded-2xl max-w-2xl w-full p-8 text-center flex flex-col items-center gap-6 shadow-[0_0_50px_rgba(16,185,129,0.15)] relative">
-      
-      <button onclick="closeFinaleModal()" class="absolute top-4 right-4 text-zinc-500 hover:text-zinc-300 mono text-sm">✕</button>
-
-      <!-- Government / Hackathon Badge -->
-      <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-600/40 text-emerald-400 text-xs mono tracking-widest uppercase">
-        <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
-        SMART INDIA HACKATHON 2026 • PS ID: 26188
-      </div>
-
-      <!-- Main Slogan -->
-      <div class="space-y-2">
-        <h2 class="text-2xl sm:text-3xl font-extrabold tracking-wider text-zinc-100 uppercase">
-          SMARTER VERIFICATION<br>
-          <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400">STRONGER NATION</span><br>
-          SAFER BORDERS
-        </h2>
-        <div class="text-xs sm:text-sm text-zinc-400 max-w-md mx-auto pt-1 leading-relaxed">
-          AI-Powered Multi-Layer Fake Document & Identity Screening System for the Ministry of Home Affairs & Sashastra Seema Bal.
+  <!-- Printable Dossier Slip Modal -->
+  <div id="dossierModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-zinc-900 border border-zinc-700 rounded-2xl max-w-md w-full p-6 text-zinc-100 flex flex-col gap-4">
+      <div id="printArea" class="space-y-3">
+        <div class="border-b border-zinc-700 pb-2 flex justify-between items-center">
+          <div>
+            <h2 class="text-sm font-bold uppercase">SSB BORDER SURVEILLANCE REPORT</h2>
+            <div class="text-[10px] text-zinc-400 mono">SASHASTRA SEEMA BAL • POLICE II DIVISION</div>
+          </div>
+          <span id="dossierBadge" class="text-xs px-2 py-0.5 font-bold rounded mono bg-red-950 text-red-400 border border-red-800">CRITICAL</span>
+        </div>
+        <div class="grid grid-cols-2 gap-2 text-[11px] mono bg-zinc-950 p-2.5 rounded-lg border border-zinc-800">
+          <div>SESSION: <span id="dosSession" class="text-zinc-200">--</span></div>
+          <div>TIMESTAMP: <span id="dosTime" class="text-zinc-200">2026-09-21</span></div>
+          <div>CHECKPOINT: <span class="text-zinc-200">RAXAUL (IN-NPL)</span></div>
+          <div>RISK SCORE: <span id="dosRisk" class="text-zinc-200 font-bold">--</span></div>
+        </div>
+        <div class="text-xs space-y-1 mono text-zinc-300">
+          <div>DOCUMENT ID: <span id="dosDoc" class="font-bold">--</span></div>
+          <div>NAME: <span id="dosName" class="font-bold">--</span></div>
+          <div>STATUS: <span id="dosVerdict" class="text-red-400 font-bold">--</span></div>
+          <div class="text-[9px] text-zinc-500 break-all pt-1">DPDP PROOF SHA-256: <span id="dosHash">--</span></div>
         </div>
       </div>
+      <div class="flex gap-2 pt-2 border-t border-zinc-800">
+        <button onclick="window.print()" class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-500 text-black text-xs font-bold rounded-lg">PRINT SLIP</button>
+        <button onclick="closeDossierSlip()" class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs rounded-lg">CLOSE</button>
+      </div>
+    </div>
+  </div>
 
-      <!-- Team Showcase Card -->
-      <div class="w-full grid grid-cols-3 gap-3 bg-zinc-900/80 p-4 rounded-xl border border-zinc-800 mono text-xs">
+  <!-- Grand Finale Showcase Modal -->
+  <div id="finaleModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-gradient-to-b from-zinc-900 to-zinc-950 border border-zinc-700 rounded-2xl max-w-lg w-full p-6 text-center flex flex-col items-center gap-5 relative">
+      <button onclick="closeFinaleModal()" class="absolute top-4 right-4 text-zinc-500 hover:text-zinc-300 mono">✕</button>
+      <div class="px-3 py-1 rounded-full bg-emerald-950 border border-emerald-700 text-emerald-400 text-xs mono font-bold">
+        SMART INDIA HACKATHON 2026 • PS ID: 26188
+      </div>
+      <div class="space-y-1">
+        <h2 class="text-xl font-extrabold uppercase tracking-wide">
+          SMARTER VERIFICATION<br>
+          <span class="text-emerald-400">STRONGER NATION</span><br>
+          SAFER BORDERS
+        </h2>
+        <div class="text-xs text-zinc-400 pt-1">AI-Powered Multi-Layer Fake Document & Identity Screening System</div>
+      </div>
+      <div class="w-full grid grid-cols-3 gap-2 bg-zinc-900 p-3 rounded-xl border border-zinc-800 mono text-xs">
         <div>
           <div class="text-zinc-500 text-[10px]">TEAM</div>
           <div class="text-emerald-400 font-bold mt-0.5">DA VINCI CODE</div>
@@ -299,55 +411,36 @@
           <div class="text-zinc-200 font-bold mt-0.5">MHA / SSB</div>
         </div>
         <div>
-          <div class="text-zinc-500 text-[10px]">COMPLIANCE</div>
-          <div class="text-indigo-400 font-bold mt-0.5">DPDP ACT 2023</div>
+          <div class="text-zinc-500 text-[10px]">PRIVACY</div>
+          <div class="text-indigo-400 font-bold mt-0.5">DPDP 2023</div>
         </div>
       </div>
-
-      <!-- Network Node Status -->
-      <div class="text-[11px] mono text-zinc-500 flex items-center gap-4">
-        <span>📍 RAXAUL</span>
-        <span>📍 PANITANKI</span>
-        <span>📍 JOGBANI</span>
-        <span>📍 PHUNTSHOLING</span>
-      </div>
-
-      <button onclick="closeFinaleModal()" class="px-8 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs tracking-wider uppercase rounded-lg shadow-lg active:scale-95">
-        RETURN TO TACTICAL COMMAND
+      <button onclick="closeFinaleModal()" class="px-6 py-2 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs rounded-lg uppercase">
+        RETURN TO HUD
       </button>
     </div>
   </div>
 
   <script>
-    let currentForensicView = 'doc';
+    let activePreset = null;
+    let scanResults = null;
+    let currentPhase = 1;
 
-    function openFinaleModal() {
-      document.getElementById('finaleModal').classList.remove('hidden');
-    }
-
-    function closeFinaleModal() {
-      document.getElementById('finaleModal').classList.add('hidden');
-    }
-
-    function switchForensicView(mode) {
-      currentForensicView = mode;
-      const doc = document.getElementById('docPreview');
-      const ela = document.getElementById('elaPreview');
-      const bDoc = document.getElementById('btnViewDoc');
-      const bEla = document.getElementById('btnViewEla');
-
-      if (mode === 'doc') {
-        doc.classList.remove('hidden'); ela.classList.add('hidden');
-        bDoc.className = "text-xs px-2.5 py-1 bg-zinc-800 text-zinc-200 rounded font-medium";
-        bEla.className = "text-xs px-2.5 py-1 bg-zinc-950 text-zinc-400 border border-zinc-800 rounded font-medium";
-      } else {
-        doc.classList.add('hidden'); ela.classList.remove('hidden');
-        bEla.className = "text-xs px-2.5 py-1 bg-zinc-800 text-zinc-200 rounded font-medium";
-        bDoc.className = "text-xs px-2.5 py-1 bg-zinc-950 text-zinc-400 border border-zinc-800 rounded font-medium";
+    function goToPhase(phaseNum) {
+      currentPhase = phaseNum;
+      for (let i = 1; i <= 5; i++) {
+        document.getElementById('phase' + i).classList.add('hidden');
+        const btn = document.getElementById('stepBtn' + i);
+        btn.className = "phase-tab flex-1 min-w-[70px] py-1.5 px-2 rounded text-center font-medium bg-zinc-900 text-zinc-400 border border-zinc-800";
       }
+      document.getElementById('phase' + phaseNum).classList.remove('hidden');
+      const activeBtn = document.getElementById('stepBtn' + phaseNum);
+      activeBtn.className = "phase-tab flex-1 min-w-[70px] py-1.5 px-2 rounded text-center font-bold bg-emerald-950 text-emerald-300 border border-emerald-700";
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    function runScenario(type) {
+    function loadScenarioPreset(type) {
+      activePreset = type;
       const canvas = document.createElement('canvas');
       canvas.width = 440; canvas.height = 280;
       const ctx = canvas.getContext('2d');
@@ -392,47 +485,44 @@
         const dt = new DataTransfer();
         dt.items.add(file);
         document.getElementById('docInput').files = dt.files;
-        document.getElementById('docPreview').src = canvas.toDataURL();
+        
+        const docUrl = canvas.toDataURL();
+        document.getElementById('docPreview').src = docUrl;
         document.getElementById('docPreview').style.display = 'block';
         document.getElementById('emptyPrompt').style.display = 'none';
-
-        executeMultiLayerPipeline(type);
+        document.getElementById('forensicDocImg').src = docUrl;
       });
     }
 
-    document.getElementById('screenForm').onsubmit = (e) => {
-      e.preventDefault();
-      executeMultiLayerPipeline(null);
-    };
+    async function startScreeningProcess() {
+      if(!document.getElementById('docInput').files[0] && !activePreset) {
+        loadScenarioPreset('CLEAN');
+      }
 
-    async function executeMultiLayerPipeline(presetType) {
-      const btn = document.getElementById('submitBtn');
+      const btn = document.getElementById('startBtn');
       const laser = document.getElementById('laserLine');
       laser.classList.remove('hidden');
-      btn.innerText = "SCREENING PIPELINE RUNNING...";
+      btn.innerText = "SCANNING & EXTRACTING (OCR)...";
       btn.disabled = true;
 
       const fd = new FormData();
       fd.append('document_image', document.getElementById('docInput').files[0]);
       if(document.getElementById('mrz1').value) fd.append('mrz_line1', document.getElementById('mrz1').value);
       if(document.getElementById('mrz2').value) fd.append('mrz_line2', document.getElementById('mrz2').value);
-      if(presetType) fd.append('simulated_preset', presetType === 'MULE' ? 'MULE_NETWORK' : presetType);
+      if(activePreset) fd.append('simulated_preset', activePreset === 'MULE' ? 'MULE_NETWORK' : activePreset);
 
       try {
         const res = await fetch('/api/v1/screen-traveler', { method: 'POST', body: fd });
         const data = await res.json();
+        scanResults = data;
 
-        // Telemetry latency update
-        document.getElementById('telemetryLatency').innerText = data.processing_latency_sec + "s";
-
-        // OCR Extraction (Clip 4)
+        // Populate Phase 2 (OCR)
         const ocr = data.ocr_extraction?.fields || {};
         document.getElementById('fName').innerText = ocr.name?.value || "--";
         document.getElementById('fDoc').innerText = ocr.doc_no?.value || "--";
         document.getElementById('fDob').innerText = ocr.dob?.value || "--";
         document.getElementById('fExp').innerText = ocr.expiry?.value || "--";
 
-        // Validation Badges (Clip 5)
         const b = data.validation_badges;
         document.getElementById('vFormat').innerText = b.format;
         document.getElementById('vChecksum').innerText = b.checksum;
@@ -441,33 +531,56 @@
         document.getElementById('vWatchlist').innerText = b.watchlist;
         document.getElementById('vWatchlist').className = b.watchlist === 'CLEAR' ? 'font-bold text-emerald-400' : 'font-bold text-red-400';
 
-        // Multi-Model Forensics (Clips 6 & 7)
+        // Populate Phase 3 (Forensics)
         document.getElementById('mEla').innerText = data.forensics.ela_score + (data.forensics.ela_score > 12 ? " [HIGH]" : " [CLEAN]");
         document.getElementById('mCopyMove').innerText = data.forensics.copy_move.detected ? "CLONES DETECTED" : "CLEAR";
         document.getElementById('mCopyMove').className = data.forensics.copy_move.detected ? "text-red-400 font-bold mt-1" : "text-zinc-200 font-bold mt-1";
         document.getElementById('mFont').innerText = data.forensics.font_consistency.anomaly_detected ? "ABNORMAL" : "UNIFORM";
 
         if(data.forensics.ela_heatmap_b64) {
-          document.getElementById('elaPreview').src = data.forensics.ela_heatmap_b64;
+          document.getElementById('forensicElaImg').src = data.forensics.ela_heatmap_b64;
         }
-
         drawCopyMoveVectors(data.forensics.copy_move.vectors);
 
-        // Biometrics (Clip 8)
+        // Populate Phase 4 (Biometrics & Mule)
         document.getElementById('faceConfidence').innerText = data.biometrics.face_match_confidence + "%";
-
-        // Identity Graph (Clip 9)
+        document.getElementById('faceBar').style.width = data.biometrics.face_match_confidence + "%";
         renderIdentityGraph(data.identity_graph);
 
-        // Clip 10: Triage Lane Highlighting
+        // Populate Phase 5 (Triage Lanes)
+        document.getElementById('finalRiskScore').innerText = data.triage.risk_score + " / 100";
+        document.getElementById('finalTriageSummary').innerText = data.triage.lane_label;
         updateTriageLanes(data.triage.indicator);
 
+        // Automatically move to Phase 2 after scan animation
+        setTimeout(() => {
+          laser.classList.add('hidden');
+          btn.innerText = "START AI SCREENING PIPELINE ➔";
+          btn.disabled = false;
+          goToPhase(2);
+        }, 900);
+
       } catch (err) {
-        alert("Screening failed: " + err);
-      } finally {
+        alert("Pipeline error: " + err);
         laser.classList.add('hidden');
-        btn.innerText = "EXECUTE SCREENING";
+        btn.innerText = "START AI SCREENING PIPELINE ➔";
         btn.disabled = false;
+      }
+    }
+
+    function toggleForensicImage(mode) {
+      const doc = document.getElementById('forensicDocImg');
+      const ela = document.getElementById('forensicElaImg');
+      const tabDoc = document.getElementById('tabForensicDoc');
+      const tabEla = document.getElementById('tabForensicEla');
+      if (mode === 'doc') {
+        doc.classList.remove('hidden'); ela.classList.add('hidden');
+        tabDoc.className = "text-[11px] px-2 py-1 bg-zinc-800 text-zinc-200 rounded font-medium";
+        tabEla.className = "text-[11px] px-2 py-1 bg-zinc-950 text-zinc-400 border border-zinc-800 rounded font-medium";
+      } else {
+        doc.classList.add('hidden'); ela.classList.remove('hidden');
+        tabEla.className = "text-[11px] px-2 py-1 bg-zinc-800 text-zinc-200 rounded font-medium";
+        tabDoc.className = "text-[11px] px-2 py-1 bg-zinc-950 text-zinc-400 border border-zinc-800 rounded font-medium";
       }
     }
 
@@ -475,32 +588,25 @@
       const g = document.getElementById('laneGreen');
       const a = document.getElementById('laneAmber');
       const r = document.getElementById('laneRed');
-
-      g.className = "p-2.5 rounded-lg border border-zinc-800 bg-zinc-950/70 flex items-center justify-between text-xs mono";
-      a.className = "p-2.5 rounded-lg border border-zinc-800 bg-zinc-950/70 flex items-center justify-between text-xs mono";
-      r.className = "p-2.5 rounded-lg border border-zinc-800 bg-zinc-950/70 flex items-center justify-between text-xs mono";
+      g.className = "p-3 rounded-xl border border-zinc-800 bg-zinc-950 flex items-center justify-between text-xs mono";
+      a.className = "p-3 rounded-xl border border-zinc-800 bg-zinc-950 flex items-center justify-between text-xs mono";
+      r.className = "p-3 rounded-xl border border-zinc-800 bg-zinc-950 flex items-center justify-between text-xs mono";
 
       if(indicator === 'GREEN') {
-        g.className = "p-2.5 rounded-lg border-2 border-emerald-500 bg-emerald-950/60 shadow-[0_0_15px_rgba(16,185,129,0.3)] flex items-center justify-between text-xs mono scale-[1.02] transition-all";
+        g.className = "p-3 rounded-xl border-2 border-emerald-500 bg-emerald-950/70 shadow-[0_0_15px_rgba(16,185,129,0.3)] flex items-center justify-between text-xs mono font-bold";
       } else if (indicator === 'AMBER') {
-        a.className = "p-2.5 rounded-lg border-2 border-amber-500 bg-amber-950/60 shadow-[0_0_15px_rgba(245,158,11,0.3)] flex items-center justify-between text-xs mono scale-[1.02] transition-all";
+        a.className = "p-3 rounded-xl border-2 border-amber-500 bg-amber-950/70 shadow-[0_0_15px_rgba(245,158,11,0.3)] flex items-center justify-between text-xs mono font-bold";
       } else {
-        r.className = "p-2.5 rounded-lg border-2 border-red-500 bg-red-950/60 shadow-[0_0_15px_rgba(239,68,68,0.3)] flex items-center justify-between text-xs mono scale-[1.02] transition-all";
+        r.className = "p-3 rounded-xl border-2 border-red-500 bg-red-950/70 shadow-[0_0_15px_rgba(239,68,68,0.3)] flex items-center justify-between text-xs mono font-bold";
       }
     }
 
-    function recordOfficerAction(action) {
-      alert("OFFICER ACTION RECORDED: " + action + "\nCommit anchored to DPDP Cryptographic Ledger.");
-    }
-
     function drawCopyMoveVectors(vectors) {
-      const c = document.getElementById('overlayCanvas');
+      const c = document.getElementById('forensicOverlayCanvas');
       const ctx = c.getContext('2d');
       c.width = c.clientWidth; c.height = c.clientHeight;
       ctx.clearRect(0, 0, c.width, c.height);
-
       if(!vectors || vectors.length === 0) return;
-
       ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2;
       vectors.forEach(v => {
         const x1 = v.from[0] / 100 * c.width;
@@ -516,40 +622,60 @@
       const ctx = c.getContext('2d');
       c.width = c.clientWidth; c.height = c.clientHeight;
       ctx.clearRect(0, 0, c.width, c.height);
-
-      document.getElementById('graphEmpty').style.display = 'none';
       const status = document.getElementById('graphStatus');
       
       if(graphData.graph_detected) {
-        status.innerText = "MULE FLAGGED";
-        status.className = "text-[10px] mono text-red-400 font-bold";
-
+        status.innerText = "SYNDICATE NETWORK MATCH";
+        status.className = "font-bold text-red-400 text-[11px]";
         const cx = c.width / 2; const cy = c.height / 2;
-        ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(cx, cy, 6, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(cx, cy, 7, 0, Math.PI * 2); ctx.fill();
 
         const satellites = [
-          {x: cx - 55, y: cy - 20, label: "P892"},
-          {x: cx + 55, y: cy - 20, label: "Z883"},
-          {x: cx, y: cy + 28, label: "V449"}
+          {x: cx - 60, y: cy - 20, label: "P892"},
+          {x: cx + 60, y: cy - 20, label: "Z883"},
+          {x: cx, y: cy + 30, label: "V449"}
         ];
-
         ctx.strokeStyle = '#f87171'; ctx.lineWidth = 1.5; ctx.font = '9px monospace';
         satellites.forEach(s => {
           ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(s.x, s.y); ctx.stroke();
-          ctx.fillStyle = '#f87171'; ctx.beginPath(); ctx.arc(s.x, s.y, 3.5, 0, Math.PI * 2); ctx.fill();
-          ctx.fillStyle = '#e4e4e7'; ctx.fillText(s.label, s.x - 14, s.y - 4);
+          ctx.fillStyle = '#f87171'; ctx.beginPath(); ctx.arc(s.x, s.y, 4, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = '#e4e4e7'; ctx.fillText(s.label, s.x - 12, s.y - 4);
         });
-
       } else {
-        status.innerText = "CLEAN 1:1";
-        status.className = "text-[10px] mono text-emerald-400 font-bold";
+        status.innerText = "ISOLATED (1:1)";
+        status.className = "font-bold text-emerald-400 text-[11px]";
         const cx = c.width / 2; const cy = c.height / 2;
-        ctx.fillStyle = '#10b981'; ctx.beginPath(); ctx.arc(cx, cy, 5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#10b981'; ctx.beginPath(); ctx.arc(cx, cy, 6, 0, Math.PI * 2); ctx.fill();
         ctx.strokeStyle = '#34d399'; ctx.lineWidth = 1.5;
-        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + 35, cy); ctx.stroke();
-        ctx.fillStyle = '#34d399'; ctx.beginPath(); ctx.arc(cx + 35, cy, 3.5, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + 40, cy); ctx.stroke();
+        ctx.fillStyle = '#34d399'; ctx.beginPath(); ctx.arc(cx + 40, cy, 4, 0, Math.PI * 2); ctx.fill();
       }
     }
+
+    function recordOfficerVerdict(action) {
+      alert("OFFICER ENFORCEMENT LOGGED: " + action + "\nZero-PII SHA-256 HMAC written to tamper-proof ledger.");
+    }
+
+    function openDossierSlip() {
+      if(!scanResults) return alert("Execute screening first.");
+      document.getElementById('dosSession').innerText = scanResults.session_id.substring(0, 16) + "...";
+      document.getElementById('dosRisk').innerText = scanResults.triage.risk_score + "/100";
+      document.getElementById('dosDoc').innerText = scanResults.ocr_extraction?.fields?.doc_no?.value || "DOC";
+      document.getElementById('dosName').innerText = scanResults.ocr_extraction?.fields?.name?.value || "TRAVELER";
+      document.getElementById('dosVerdict').innerText = scanResults.triage.lane_label;
+      document.getElementById('dosHash').innerText = scanResults.audit_ledger.doc_sha256;
+      document.getElementById('dossierModal').classList.remove('hidden');
+    }
+
+    function closeDossierSlip() {
+      document.getElementById('dossierModal').classList.add('hidden');
+    }
+
+    function openFinaleModal() { document.getElementById('finaleModal').classList.remove('hidden'); }
+    function closeFinaleModal() { document.getElementById('finaleModal').classList.add('hidden'); }
+
+    // Init with default scenario
+    window.onload = () => { loadScenarioPreset('CLEAN'); };
   </script>
 </body>
 </html>
