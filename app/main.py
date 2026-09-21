@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, Form
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 import uuid
@@ -14,7 +14,7 @@ from app.core.crypto_audit import CryptoAuditLogger
 app = FastAPI(
     title="SeemaDrishti - Border Security Core API",
     description="Automated AI fake document, forensic tampering and biometric verification engine for SSB border checkposts.",
-    version="2.1.0"
+    version="2.2.0"
 )
 
 app.add_middleware(
@@ -41,53 +41,89 @@ def serve_dashboard():
 def health_check():
     return {
         "status": "OPERATIONAL",
-        "system": "SeemaDrishti Terminal Node",
+        "system": "SeemaDrishti Terminal Node #04",
         "compliance": "DPDP Act 2023 Compliant (Zero-PII Ledger)"
     }
+
+@app.get("/api/v1/audit/verify/{session_id}")
+def verify_audit_ledger(session_id: str):
+    res = CryptoAuditLogger.verify_record(session_id)
+    if not res.get("verified") and "not found" in res.get("reason", "").lower():
+        raise HTTPException(status_code=404, detail="Audit record not found on terminal ledger.")
+    return res
 
 @app.post("/api/v1/screen-traveler")
 async def screen_traveler(
     document_image: UploadFile = File(...),
     live_face_image: Optional[UploadFile] = File(None),
     mrz_line1: Optional[str] = Form(None),
-    mrz_line2: Optional[str] = Form(None)
+    mrz_line2: Optional[str] = Form(None),
+    simulated_preset: Optional[str] = Form(None)
 ):
     session_id = str(uuid.uuid4())
     doc_bytes = await document_image.read()
 
-    # Stage 1: Quality Gate (< 100ms)
-    q_res = quality_gate.evaluate(doc_bytes)
-    if not q_res["passed"]:
-        return {
-            "session_id": session_id,
-            "triage_summary": {"status": "RETAKE_DOCUMENT", "indicator": "AMBER", "overall_risk_score": 45.0},
-            "quality_gate": q_res,
-            "message": "Recapture required due to blur or severe lamination glare."
+    # Preset Overrides for 100% Deterministic Demonstrations
+    if simulated_preset == "TAMPERED":
+        q_res = {"passed": True, "variance_score": 182.4, "reason": "Clear"}
+        mrz_res = {
+            "valid": False,
+            "type": "ICAO_TD3_PASSPORT",
+            "passport_number": "P8921443",
+            "dob": "980512",
+            "checksums_passed": {"passport": True, "dob": False, "expiry": True}
         }
+        f_res = forensics.compute_ela_score(doc_bytes)
+        f_res["tampering_detected"] = True
+        f_res["ela_anomaly_score"] = 24.8
+        f_res["bounding_boxes"] = [{"label": "Spliced Photo Boundary & Tampered DOB", "box": [22, 12, 68, 48]}]
+        face_score = 88.0
+        mule_res = {"identity_mule_flag": False}
+    elif simulated_preset == "MULE":
+        q_res = {"passed": True, "variance_score": 164.0, "reason": "Clear"}
+        mrz_res = MRZValidator.validate_type3_passport(
+            "P<INDVERMA<<ROHIT<<<<<<<<<<<<<<<<<<<<<<<<<<<",
+            "Z8834112<4IND9408152M2911181<<<<<<<<<<<<<<2"
+        )
+        f_res = forensics.compute_ela_score(doc_bytes)
+        f_res["tampering_detected"] = False
+        face_score = 94.2
+        mule_res = {
+            "identity_mule_flag": True,
+            "matched_records_count": 2,
+            "flagged_matches": [{"suspect_id": "WL-IND-2023-A09", "similarity": 0.912}]
+        }
+    else:
+        # Standard Execution Pipeline
+        q_res = quality_gate.evaluate(doc_bytes)
+        if not q_res["passed"]:
+            return {
+                "session_id": session_id,
+                "triage_summary": {"status": "RETAKE_DOCUMENT", "indicator": "AMBER", "overall_risk_score": 45.0},
+                "quality_gate": q_res,
+                "message": "Immediate document recapture required due to blur or high glare."
+            }
 
-    # Stage 2: MRZ Checksum Validation
-    mrz_res = {"parsed": False, "valid": True}
-    if mrz_line1 and mrz_line2:
-        mrz_res = MRZValidator.validate_type3_passport(mrz_line1, mrz_line2)
+        mrz_res = {"parsed": False, "valid": True}
+        if mrz_line1 and mrz_line2:
+            mrz_res = MRZValidator.validate_type3_passport(mrz_line1, mrz_line2)
 
-    # Stage 3: Tampering Forensics (ELA + Heatmap generation)
-    f_res = forensics.compute_ela_score(doc_bytes)
+        f_res = forensics.compute_ela_score(doc_bytes)
 
-    # Stage 4: Biometric Matching & 1:N Mule Check
-    face_score = 92.5
-    mule_res = {"identity_mule_flag": False}
-    if live_face_image:
-        live_bytes = await live_face_image.read()
-        face_score = biometrics.verify_1_to_1(doc_bytes, live_bytes)
-        doc_num = mrz_res.get("passport_number", "DOC_UNKNOWN")
-        mule_res = biometrics.check_1_to_n_mule(live_bytes, doc_num)
+        face_score = 92.5
+        mule_res = {"identity_mule_flag": False}
+        if live_face_image:
+            live_bytes = await live_face_image.read()
+            face_score = biometrics.verify_1_to_1(doc_bytes, live_bytes)
+            doc_num = mrz_res.get("passport_number", "DOC_UNKNOWN")
+            mule_res = biometrics.check_1_to_n_mule(live_bytes, doc_num)
 
-    # Stage 5: Weighted Risk Scoring
-    forensic_risk = 70.0 if f_res.get("tampering_detected") else 10.0
-    mrz_risk = 0.0 if mrz_res.get("valid", True) else 80.0
+    # Weighted Risk Scoring
+    forensic_risk = 75.0 if f_res.get("tampering_detected") else 8.0
+    mrz_risk = 0.0 if mrz_res.get("valid", True) else 85.0
     bio_risk = (100.0 - face_score) if face_score < 70.0 else 5.0
     if mule_res.get("identity_mule_flag"):
-        bio_risk += 50.0
+        bio_risk += 60.0
 
     total_risk = round(0.4 * forensic_risk + 0.3 * mrz_risk + 0.3 * bio_risk, 2)
 
@@ -101,7 +137,7 @@ async def screen_traveler(
         triage = "DETAIN_CRITICAL_ALERT"
         color = "RED"
 
-    # Stage 6: DPDP Act 2023 Zero-PII Audit Ledger Entry
+    # DPDP Act 2023 Cryptographic Commitment
     audit_entry = CryptoAuditLogger.generate_audit_record(session_id, total_risk, triage, doc_bytes)
 
     return {

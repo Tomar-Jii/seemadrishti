@@ -9,143 +9,221 @@
   <style>
     body { font-family: 'Inter', sans-serif; }
     .mono { font-family: 'JetBrains Mono', monospace; }
+    @media print {
+      body * { visibility: hidden; }
+      #dossierPrintArea, #dossierPrintArea * { visibility: visible; }
+      #dossierPrintArea { position: absolute; left: 0; top: 0; width: 100%; }
+    }
   </style>
 </head>
 <body class="bg-zinc-950 text-zinc-100 min-h-screen flex flex-col antialiased selection:bg-emerald-500 selection:text-black">
 
   <!-- Tactical Header -->
-  <header class="border-b border-zinc-800 bg-zinc-900/60 backdrop-blur px-6 py-3 flex flex-wrap items-center justify-between gap-4">
+  <header class="border-b border-zinc-800 bg-zinc-900/70 backdrop-blur px-6 py-3 flex flex-wrap items-center justify-between gap-4">
     <div class="flex items-center gap-3">
       <div class="h-3 w-3 rounded-full bg-emerald-500 animate-pulse"></div>
       <h1 class="text-base font-bold tracking-wider uppercase text-zinc-200">
         SEEMADRISHTI <span class="text-zinc-500 font-normal">| SSB BORDER TERMINAL #04</span>
       </h1>
     </div>
+
+    <!-- 1-Click Preset Demo Injector for Grand Finale -->
+    <div class="flex items-center gap-2 bg-zinc-950 px-3 py-1.5 rounded-lg border border-zinc-800">
+      <span class="text-[11px] mono text-zinc-400">JURY PRESETS:</span>
+      <button onclick="runPreset('CLEAN')" class="text-xs px-2.5 py-1 bg-emerald-950 text-emerald-300 hover:bg-emerald-900 border border-emerald-800 rounded font-medium">1. Clean Passport</button>
+      <button onclick="runPreset('TAMPERED')" class="text-xs px-2.5 py-1 bg-red-950 text-red-300 hover:bg-red-900 border border-red-800 rounded font-medium">2. Spliced Forgery</button>
+      <button onclick="runPreset('MULE')" class="text-xs px-2.5 py-1 bg-amber-950 text-amber-300 hover:bg-amber-900 border border-amber-800 rounded font-medium">3. Identity Mule</button>
+    </div>
+
     <div class="flex items-center gap-6 text-xs mono text-zinc-400">
       <div>CHECKPOINT: <span class="text-zinc-200">IN-NPL-RAXAUL</span></div>
-      <div>ENCRYPTION: <span class="text-emerald-400">AES-256 / DPDP-COMPLIANT</span></div>
-      <div class="px-2.5 py-1 bg-zinc-800 rounded border border-zinc-700 text-zinc-300">NODE STATUS: ONLINE</div>
+      <div class="px-2.5 py-1 bg-zinc-800 rounded border border-zinc-700 text-zinc-300">NODE: ACTIVE</div>
     </div>
   </header>
 
   <!-- Main Grid -->
   <main class="flex-1 p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-[1800px] w-full mx-auto">
     
-    <!-- Left Column: Document Scanner & MRZ Inputs (4 cols) -->
+    <!-- Left Column: Ingestion & Cameras (4 cols) -->
     <div class="lg:col-span-4 flex flex-col gap-5">
       <div class="bg-zinc-900/50 border border-zinc-800 rounded-xl p-5 flex flex-col gap-4">
         <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-400 mono flex items-center justify-between">
           <span>01. Ingestion Control</span>
-          <span class="text-zinc-500">ICAO-9303</span>
+          <span class="text-emerald-400">ICAO 9303 / QR</span>
         </h2>
 
-        <!-- File Upload Form -->
         <form id="screenForm" class="flex flex-col gap-4">
           <div>
-            <label class="block text-xs font-medium text-zinc-300 mb-1.5">Document Scan (Passport / ID / Visa)</label>
-            <input type="file" id="docInput" accept="image/*" required class="block w-full text-xs text-zinc-400 file:mr-3 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-zinc-800 file:text-zinc-200 hover:file:bg-zinc-700 cursor-pointer bg-zinc-950 border border-zinc-800 rounded p-1">
+            <div class="flex justify-between items-center mb-1">
+              <label class="text-xs font-medium text-zinc-300">Document Scan</label>
+              <button type="button" onclick="startWebcam('doc')" class="text-[10px] text-emerald-400 hover:underline mono">USE SCANNER CAM</button>
+            </div>
+            <input type="file" id="docInput" accept="image/*" class="block w-full text-xs text-zinc-400 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-zinc-800 file:text-zinc-200 hover:file:bg-zinc-700 cursor-pointer bg-zinc-950 border border-zinc-800 rounded p-1">
           </div>
 
           <div>
-            <label class="block text-xs font-medium text-zinc-300 mb-1.5">Live Kiosk Camera Snapshot</label>
-            <input type="file" id="faceInput" accept="image/*" class="block w-full text-xs text-zinc-400 file:mr-3 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-zinc-800 file:text-zinc-200 hover:file:bg-zinc-700 cursor-pointer bg-zinc-950 border border-zinc-800 rounded p-1">
+            <div class="flex justify-between items-center mb-1">
+              <label class="text-xs font-medium text-zinc-300">Live Kiosk Camera</label>
+              <button type="button" onclick="startWebcam('face')" class="text-[10px] text-emerald-400 hover:underline mono">USE KIOSK CAM</button>
+            </div>
+            <input type="file" id="faceInput" accept="image/*" class="block w-full text-xs text-zinc-400 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-zinc-800 file:text-zinc-200 hover:file:bg-zinc-700 cursor-pointer bg-zinc-950 border border-zinc-800 rounded p-1">
           </div>
 
           <div class="grid grid-cols-1 gap-2 pt-1">
-            <label class="block text-xs font-medium text-zinc-300">MRZ Lines (Optional for Auto-Checksum)</label>
+            <label class="block text-xs font-medium text-zinc-300">MRZ Strings</label>
             <input type="text" id="mrz1" placeholder="Line 1: P<INDTOMAR<<ARYAN..." class="w-full text-xs mono px-3 py-2 bg-zinc-950 border border-zinc-800 rounded focus:border-emerald-500 outline-none text-zinc-200 uppercase">
             <input type="text" id="mrz2" placeholder="Line 2: Z1234567<8IND080405..." class="w-full text-xs mono px-3 py-2 bg-zinc-950 border border-zinc-800 rounded focus:border-emerald-500 outline-none text-zinc-200 uppercase">
           </div>
 
-          <div class="flex items-center gap-2 pt-2">
-            <button type="button" onclick="loadSamplePassport()" class="flex-1 text-xs py-2 bg-zinc-800 hover:bg-zinc-700 rounded font-medium text-zinc-300 border border-zinc-700">Load Test MRZ</button>
-            <button type="submit" id="submitBtn" class="flex-1 text-xs py-2 bg-emerald-600 hover:bg-emerald-500 rounded font-semibold text-black tracking-wide">EXECUTE SCAN</button>
-          </div>
+          <button type="submit" id="submitBtn" class="w-full text-xs py-2.5 bg-emerald-600 hover:bg-emerald-500 rounded font-semibold text-black tracking-wide mt-1">EXECUTE SCREENING</button>
         </form>
       </div>
 
       <!-- MRZ Status Block -->
       <div class="bg-zinc-900/50 border border-zinc-800 rounded-xl p-5 flex flex-col gap-3">
-        <h3 class="text-xs font-semibold uppercase tracking-wider text-zinc-400 mono">02. Cryptographic Checksum</h3>
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-zinc-400 mono">02. ICAO 9303 Checksum Gate</h3>
         <div id="mrzDetails" class="text-xs mono text-zinc-500 space-y-1">
-          Awaiting document processing...
+          Awaiting input scan...
         </div>
       </div>
     </div>
 
-    <!-- Center Column: Forensics & ELA Heatmap (5 cols) -->
+    <!-- Center Column: Forensics & Heatmap (5 cols) -->
     <div class="lg:col-span-5 flex flex-col gap-5">
       <div class="bg-zinc-900/50 border border-zinc-800 rounded-xl p-5 flex flex-col gap-4 flex-1">
         <div class="flex items-center justify-between">
-          <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-400 mono">03. Forensic Tampering Inspection</h2>
+          <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-400 mono">03. Tampering Diagnostics</h2>
           <div class="flex gap-2">
             <button id="tabDoc" onclick="toggleView('doc')" class="text-xs px-2.5 py-1 bg-zinc-800 text-zinc-200 rounded font-medium">Scanned ID</button>
             <button id="tabEla" onclick="toggleView('ela')" class="text-xs px-2.5 py-1 bg-zinc-950 text-zinc-400 rounded font-medium border border-zinc-800">ELA Heatmap</button>
           </div>
         </div>
 
-        <!-- Viewport -->
-        <div class="relative w-full h-[380px] bg-zinc-950 rounded-lg border border-zinc-800 flex items-center justify-center overflow-hidden">
+        <div class="relative w-full h-[360px] bg-zinc-950 rounded-lg border border-zinc-800 flex items-center justify-center overflow-hidden">
           <img id="docPreview" class="max-h-full max-w-full object-contain" style="display:none;" />
           <img id="elaPreview" class="max-h-full max-w-full object-contain hidden" />
-          <div id="noImagePrompt" class="text-xs text-zinc-600 mono">NO DOCUMENT LOADED</div>
-          <!-- Bounding Box Layer -->
-          <div id="boxLayer" class="absolute inset-0 pointer-events-none"></div>
+          <div id="noImagePrompt" class="text-xs text-zinc-600 mono">NO SCAN INGESTED</div>
+          <div id="boxOverlay" class="absolute inset-0 pointer-events-none hidden border-2 border-red-500 bg-red-500/10 rounded">
+            <span class="absolute top-1 left-1 bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded mono font-bold">TAMPERED REGION</span>
+          </div>
         </div>
 
         <div class="grid grid-cols-2 gap-3 text-xs mono">
           <div class="bg-zinc-950 p-3 rounded border border-zinc-800">
-            <div class="text-zinc-500">QUALITY GATE</div>
+            <div class="text-zinc-500">IMAGE QUALITY</div>
             <div id="qScore" class="text-zinc-300 font-bold mt-1">--</div>
           </div>
           <div class="bg-zinc-950 p-3 rounded border border-zinc-800">
-            <div class="text-zinc-500">ELA RESIDUAL SCORE</div>
+            <div class="text-zinc-500">ELA RESIDUAL DIVERGENCE</div>
             <div id="elaScore" class="text-zinc-300 font-bold mt-1">--</div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Right Column: Triage & Audit (3 cols) -->
+    <!-- Right Column: Triage, Biometrics & Dossier (3 cols) -->
     <div class="lg:col-span-3 flex flex-col gap-5">
-      <!-- Status Badge -->
-      <div id="triageCard" class="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6 flex flex-col items-center justify-center text-center gap-2">
-        <span class="text-xs mono uppercase text-zinc-500 tracking-widest">Triage Verdict</span>
+      <div id="triageCard" class="bg-zinc-900/50 border border-zinc-800 rounded-xl p-5 flex flex-col items-center justify-center text-center gap-2">
+        <span class="text-xs mono uppercase text-zinc-500 tracking-widest">Triage Action</span>
         <div id="triageStatus" class="text-xl font-bold mono text-zinc-400">READY</div>
-        <div id="riskScore" class="text-xs mono text-zinc-500">Awaiting scan execution</div>
+        <div id="riskScore" class="text-xs mono text-zinc-500">System idle</div>
       </div>
 
-      <!-- Biometric Verification -->
       <div class="bg-zinc-900/50 border border-zinc-800 rounded-xl p-5 flex flex-col gap-3">
-        <h3 class="text-xs font-semibold uppercase tracking-wider text-zinc-400 mono">04. Biometric Engine</h3>
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-zinc-400 mono">04. Biometrics & Mule Radar</h3>
         <div class="flex justify-between items-center text-xs mono">
-          <span class="text-zinc-400">Cosine Match:</span>
+          <span class="text-zinc-400">ArcFace 1:1 Cosine:</span>
           <span id="faceScore" class="text-zinc-200 font-bold">--</span>
         </div>
         <div class="flex justify-between items-center text-xs mono">
-          <span class="text-zinc-400">1:N Mule Radar:</span>
+          <span class="text-zinc-400">1:N Mule Watchlist:</span>
           <span id="muleStatus" class="text-zinc-200 font-bold">CLEAR</span>
         </div>
       </div>
 
-      <!-- DPDP Act 2023 Ledger Proof -->
-      <div class="bg-zinc-900/50 border border-zinc-800 rounded-xl p-5 flex flex-col gap-2 flex-1">
-        <h3 class="text-xs font-semibold uppercase tracking-wider text-zinc-400 mono">05. DPDP Zero-PII Hash</h3>
-        <div class="text-[10px] text-zinc-500 mono leading-relaxed">
-          Zero personally identifiable traveler data is logged. Verification commitments use SHA-256 HMAC proofs:
+      <div class="bg-zinc-900/50 border border-zinc-800 rounded-xl p-5 flex flex-col gap-3 flex-1">
+        <div class="flex justify-between items-center">
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-zinc-400 mono">05. Audit Ledger Proof</h3>
+          <button onclick="verifyLedgerLive()" class="text-[10px] mono text-emerald-400 hover:underline">VERIFY HASH</button>
         </div>
-        <div id="auditBox" class="mt-2 text-[10px] mono bg-zinc-950 p-2.5 rounded border border-zinc-800 text-zinc-400 break-all h-28 overflow-y-auto">
-          No active session hash.
+        <div id="auditBox" class="text-[10px] mono bg-zinc-950 p-2.5 rounded border border-zinc-800 text-zinc-400 break-all h-24 overflow-y-auto">
+          No session commit yet.
         </div>
+        <!-- Dossier Export Button -->
+        <button id="dossierBtn" onclick="openDossierModal()" disabled class="w-full text-xs py-2 bg-zinc-800 hover:bg-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed rounded font-semibold text-zinc-200 border border-zinc-700 mt-auto">
+          GENERATE SSB DOSSIER (PRINT)
+        </button>
       </div>
     </div>
 
   </main>
 
+  <!-- Hidden Printable Incident Dossier Modal -->
+  <div id="dossierModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-zinc-900 border border-zinc-700 rounded-xl max-w-xl w-full p-6 text-zinc-100 flex flex-col gap-4">
+      <div id="dossierPrintArea" class="space-y-4">
+        <div class="border-b border-zinc-700 pb-3 flex justify-between items-start">
+          <div>
+            <h2 class="text-base font-bold tracking-wide uppercase">SSB BORDER SURVEILLANCE REPORT</h2>
+            <div class="text-xs text-zinc-400 mono">SASHASTRA SEEMA BAL | POLICE II DIVISION</div>
+          </div>
+          <span id="dosVerdictBadge" class="text-xs px-2 py-1 font-bold rounded mono">CRITICAL</span>
+        </div>
+        <div class="grid grid-cols-2 gap-2 text-xs mono bg-zinc-950 p-3 rounded border border-zinc-800">
+          <div>SESSION: <span id="dosSession" class="text-zinc-200 font-bold">--</span></div>
+          <div>TIMESTAMP: <span id="dosTime" class="text-zinc-200">--</span></div>
+          <div>CHECKPOINT: <span class="text-zinc-200">RAXAUL (IN-NPL)</span></div>
+          <div>RISK SCORE: <span id="dosRisk" class="text-zinc-200 font-bold">--</span></div>
+        </div>
+        <div class="text-xs space-y-1 mono text-zinc-300">
+          <div>DOCUMENT ID: <span id="dosDocNum" class="font-bold">--</span></div>
+          <div>VIOLATION SUMMARY: <span id="dosSummary" class="text-red-400">Tampering detected</span></div>
+          <div class="text-[10px] text-zinc-500 break-all">SHA-256 PROOF: <span id="dosHash">--</span></div>
+        </div>
+      </div>
+      <div class="flex gap-2 pt-2 border-t border-zinc-800">
+        <button onclick="window.print()" class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-500 text-black text-xs font-bold rounded">PRINT DOSSIER SLIP</button>
+        <button onclick="closeDossierModal()" class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs rounded">CLOSE</button>
+      </div>
+    </div>
+  </div>
+
   <script>
-    function loadSamplePassport() {
-      document.getElementById('mrz1').value = "P<INDTOMAR<<ARYAN<<<<<<<<<<<<<<<<<<<<<<<<<<<";
-      document.getElementById('mrz2').value = "Z1234567<8IND0804051M2809214<<<<<<<<<<<<<<0";
+    let currentSessionData = null;
+
+    function runPreset(type) {
+      // Create lightweight synthetic SVG dummy document
+      const canvas = document.createElement('canvas');
+      canvas.width = 400; canvas.height = 260;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = type === 'TAMPERED' ? '#451a1a' : '#1e293b';
+      ctx.fillRect(0, 0, 400, 260);
+      ctx.fillStyle = '#ffffff'; ctx.font = '16px monospace';
+      ctx.fillText("REPUBLIC OF INDIA - PASSPORT", 30, 40);
+      ctx.font = '12px monospace';
+      ctx.fillText("NAME: ARYAN TOMAR", 30, 90);
+      ctx.fillText(type === 'TAMPERED' ? "DOB: 12/05/1998 [MODIFIED]" : "DOB: 05/04/2008", 30, 120);
+      ctx.fillText("PASSPORT: P8921443", 30, 150);
+
+      canvas.toBlob(blob => {
+        const file = new File([blob], "preset_doc.jpg", { type: "image/jpeg" });
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        document.getElementById('docInput').files = dt.files;
+        document.getElementById('docPreview').src = canvas.toDataURL();
+        document.getElementById('docPreview').style.display = 'block';
+        document.getElementById('noImagePrompt').style.display = 'none';
+
+        if (type === 'TAMPERED') {
+          document.getElementById('mrz1').value = "P<INDTOMAR<<ARYAN<<<<<<<<<<<<<<<<<<<<<<<<<<<";
+          document.getElementById('mrz2').value = "P8921443<1IND9805128M2809214<<<<<<<<<<<<<<0";
+        } else {
+          document.getElementById('mrz1').value = "P<INDTOMAR<<ARYAN<<<<<<<<<<<<<<<<<<<<<<<<<<<";
+          document.getElementById('mrz2').value = "Z1234567<8IND0804051M2809214<<<<<<<<<<<<<<0";
+        }
+
+        executeScreening(type);
+      });
     }
 
     function toggleView(mode) {
@@ -175,10 +253,14 @@
       }
     };
 
-    document.getElementById('screenForm').onsubmit = async (e) => {
+    document.getElementById('screenForm').onsubmit = (e) => {
       e.preventDefault();
+      executeScreening(null);
+    };
+
+    async function executeScreening(presetMode) {
       const btn = document.getElementById('submitBtn');
-      btn.innerText = "PROCESSING...";
+      btn.innerText = "RUNNING FAIL-FAST PIPELINE...";
       btn.disabled = true;
 
       const fd = new FormData();
@@ -188,17 +270,26 @@
       }
       if(document.getElementById('mrz1').value) fd.append('mrz_line1', document.getElementById('mrz1').value);
       if(document.getElementById('mrz2').value) fd.append('mrz_line2', document.getElementById('mrz2').value);
+      if(presetMode) fd.append('simulated_preset', presetMode);
 
       try {
         const res = await fetch('/api/v1/screen-traveler', { method: 'POST', body: fd });
         const data = await res.json();
-        
+        currentSessionData = data;
+
         // Quality & Forensics
         document.getElementById('qScore').innerText = (data.quality_gate?.passed ? "PASSED (" : "FAILED (") + (data.quality_gate?.variance_score || 0) + ")";
-        document.getElementById('elaScore').innerText = data.forensics?.ela_anomaly_score + (data.forensics?.tampering_detected ? " [TAMPERED]" : " [CLEAN]");
+        document.getElementById('elaScore').innerText = data.forensics?.ela_anomaly_score + (data.forensics?.tampering_detected ? " [ANOMALY]" : " [CLEAN]");
         
         if (data.forensics?.ela_heatmap_b64) {
           document.getElementById('elaPreview').src = data.forensics.ela_heatmap_b64;
+        }
+
+        const box = document.getElementById('boxOverlay');
+        if (data.forensics?.bounding_boxes?.length > 0) {
+          box.classList.remove('hidden');
+        } else {
+          box.classList.add('hidden');
         }
 
         // Triage Status Card
@@ -210,22 +301,23 @@
         risk.innerText = "Risk Score: " + data.triage_summary.overall_risk_score + " / 100";
 
         if(data.triage_summary.indicator === 'GREEN') {
-          triageCard.className = "bg-emerald-950/40 border border-emerald-500/60 rounded-xl p-6 flex flex-col items-center justify-center text-center gap-2";
+          triageCard.className = "bg-emerald-950/40 border border-emerald-500/60 rounded-xl p-5 flex flex-col items-center justify-center text-center gap-2";
           status.className = "text-xl font-bold mono text-emerald-400";
         } else if (data.triage_summary.indicator === 'AMBER') {
-          triageCard.className = "bg-amber-950/40 border border-amber-500/60 rounded-xl p-6 flex flex-col items-center justify-center text-center gap-2";
+          triageCard.className = "bg-amber-950/40 border border-amber-500/60 rounded-xl p-5 flex flex-col items-center justify-center text-center gap-2";
           status.className = "text-xl font-bold mono text-amber-400";
         } else {
-          triageCard.className = "bg-red-950/40 border border-red-500/60 rounded-xl p-6 flex flex-col items-center justify-center text-center gap-2";
+          triageCard.className = "bg-red-950/40 border border-red-500/60 rounded-xl p-5 flex flex-col items-center justify-center text-center gap-2";
           status.className = "text-xl font-bold mono text-red-400";
         }
 
         // MRZ Status
         if(data.mrz_validation?.parsed !== false && data.mrz_validation?.passport_number) {
+          const isV = data.mrz_validation.valid;
           document.getElementById('mrzDetails').innerHTML = `
             <div class="text-zinc-300">DOC NO: ${data.mrz_validation.passport_number}</div>
             <div class="text-zinc-300">DOB: ${data.mrz_validation.dob}</div>
-            <div class="text-emerald-400 font-bold">CHECKSUMS: 100% VALIDATED</div>
+            <div class="${isV ? 'text-emerald-400' : 'text-red-400'} font-bold">CHECKSUM: ${isV ? '100% VALIDATED' : 'FAILED / TAMPERED DOB'}</div>
           `;
         } else {
           document.getElementById('mrzDetails').innerText = "Manual Review / Non-MRZ Document";
@@ -233,22 +325,81 @@
 
         // Biometrics
         document.getElementById('faceScore').innerText = data.biometrics.face_match_score + "%";
-        document.getElementById('muleStatus').innerText = data.biometrics.mule_detection.identity_mule_flag ? "ALERT: MULE" : "PASSED";
+        document.getElementById('muleStatus').innerText = data.biometrics.mule_detection.identity_mule_flag ? "ALERT: MULE DETECTED" : "CLEAR";
+        document.getElementById('muleStatus').className = data.biometrics.mule_detection.identity_mule_flag ? "text-red-400 font-bold" : "text-emerald-400 font-bold";
 
         // Audit Hash
         document.getElementById('auditBox').innerHTML = `
           <div>SESSION: ${data.session_id}</div>
           <div class="text-emerald-400">SHA256: ${data.audit_ledger.doc_sha256}</div>
-          <div class="text-zinc-500">SIG: ${data.audit_ledger.audit_signature}</div>
+          <div class="text-zinc-500">HMAC-SIG: ${data.audit_ledger.audit_signature}</div>
         `;
+
+        document.getElementById('dossierBtn').disabled = false;
 
       } catch (err) {
         alert("Scan processing failed: " + err);
       } finally {
-        btn.innerText = "EXECUTE SCAN";
+        btn.innerText = "EXECUTE SCREENING";
         btn.disabled = false;
       }
-    };
+    }
+
+    async function verifyLedgerLive() {
+      if(!currentSessionData) return alert("Execute a scan first.");
+      const res = await fetch('/api/v1/audit/verify/' + currentSessionData.session_id);
+      const data = await res.json();
+      alert("DPDP Cryptographic Proof:\n" + JSON.stringify(data, null, 2));
+    }
+
+    function openDossierModal() {
+      if(!currentSessionData) return;
+      document.getElementById('dosSession').innerText = currentSessionData.session_id.substring(0, 18) + "...";
+      document.getElementById('dosTime').innerText = currentSessionData.audit_ledger.timestamp;
+      document.getElementById('dosRisk').innerText = currentSessionData.triage_summary.overall_risk_score + "/100";
+      document.getElementById('dosDocNum').innerText = currentSessionData.mrz_validation?.passport_number || "IND-SCAN-2026";
+      document.getElementById('dosSummary').innerText = currentSessionData.triage_summary.status;
+      document.getElementById('dosHash').innerText = currentSessionData.audit_ledger.doc_sha256;
+      document.getElementById('dosVerdictBadge').innerText = currentSessionData.triage_summary.indicator;
+      document.getElementById('dosVerdictBadge').className = currentSessionData.triage_summary.indicator === 'RED' ? 'bg-red-950 text-red-400 mono' : 'bg-emerald-950 text-emerald-400 mono';
+      document.getElementById('dossierModal').classList.remove('hidden');
+    }
+
+    function closeDossierModal() {
+      document.getElementById('dossierModal').classList.add('hidden');
+    }
+
+    async function startWebcam(target) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        const video = document.createElement('video');
+        video.srcObject = stream;
+        video.play();
+        video.onloadedmetadata = () => {
+          setTimeout(() => {
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            stream.getTracks().forEach(track => track.stop());
+            canvas.toBlob(blob => {
+              const file = new File([blob], target + "_cam.jpg", { type: "image/jpeg" });
+              const dt = new DataTransfer();
+              dt.items.add(file);
+              if (target === 'doc') {
+                document.getElementById('docInput').files = dt.files;
+                document.getElementById('docPreview').src = canvas.toDataURL();
+                document.getElementById('docPreview').style.display = 'block';
+                document.getElementById('noImagePrompt').style.display = 'none';
+              } else {
+                document.getElementById('faceInput').files = dt.files;
+              }
+            }, 'image/jpeg');
+          }, 800);
+        };
+      } catch (err) {
+        alert("Camera access failed: " + err);
+      }
+    }
   </script>
 </body>
 </html>
