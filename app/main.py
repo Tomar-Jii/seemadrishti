@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, Form
+from fastapi import FastAPI, UploadFile, File, Form, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 import uuid
@@ -6,6 +6,7 @@ import os
 import time
 from typing import Optional
 
+from app.engine.doc_detector import DocumentDetector
 from app.engine.quality import QualityGate
 from app.engine.forensics_advanced import AdvancedForensicsEngine
 from app.engine.mrz import MRZValidator
@@ -17,7 +18,7 @@ from app.core.crypto_audit import CryptoAuditLogger
 app = FastAPI(
     title="SeemaDrishti - National Border AI System",
     description="SIH 2026 | Ministry of Home Affairs | Team Da Vinci Code",
-    version="3.6.0"
+    version="4.0.0"
 )
 
 app.add_middleware(
@@ -28,17 +29,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-quality_gate = QualityGate()
-forensics = AdvancedForensicsEngine()
-biometrics = BiometricsEngine()
-ocr = OCRExtractorEngine()
-identity_graph = IdentityGraphEngine()
-
 TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), "templates", "dashboard.html")
 
 @app.get("/", response_class=HTMLResponse)
 @app.get("/dashboard", response_class=HTMLResponse)
-def serve_dashboard():
+def serve_dashboard(response: Response):
+    # Enforce fresh load without browser caching
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
     with open(TEMPLATE_PATH, "r", encoding="utf-8") as f:
         return HTMLResponse(content=f.read())
 
@@ -52,17 +51,18 @@ async def screen_traveler(
 ):
     start_time = time.time()
     session_id = str(uuid.uuid4())
-    doc_bytes = await document_image.read()
+    raw_doc_bytes = await document_image.read()
 
-    # Preset Overrides
+    # Presets mapped strictly to Storyboard Clips
     if simulated_preset == "TAMPERED":
-        q_res = {"passed": True, "variance_score": 210.5, "reason": "High Resolution"}
+        doc_bytes = raw_doc_bytes
+        q_res = {"passed": True, "variance_score": 210.5, "reason": "Clear Resolution"}
         mrz_res = {
             "valid": False, "type": "ICAO_TD3", "passport_number": "P8921443",
             "dob": "980512", "full_name": "ARYAN TOMAR", "expiry": "280921",
             "checksums_passed": {"passport": True, "dob": False, "expiry": True}
         }
-        f_res = forensics.analyze_document_forensics(doc_bytes)
+        f_res = AdvancedForensicsEngine.analyze_document_forensics(doc_bytes)
         f_res["tampering_detected"] = True
         f_res["ela_score"] = 28.4
         f_res["copy_move"]["detected"] = True
@@ -72,40 +72,73 @@ async def screen_traveler(
         is_mule = False
 
     elif simulated_preset == "MULE_NETWORK":
-        q_res = {"passed": True, "variance_score": 195.0, "reason": "High Resolution"}
+        doc_bytes = raw_doc_bytes
+        q_res = {"passed": True, "variance_score": 195.0, "reason": "Clear Resolution"}
         mrz_res = MRZValidator.validate_type3_passport(
             "P<INDVERMA<<ROHIT<<<<<<<<<<<<<<<<<<<<<<<<<<<",
             "Z8834112<4IND9408152M2911181<<<<<<<<<<<<<<2"
         )
-        f_res = forensics.analyze_document_forensics(doc_bytes)
+        f_res = AdvancedForensicsEngine.analyze_document_forensics(doc_bytes)
         face_score = 96.2
         is_mule = True
 
     elif simulated_preset == "REVIEW_AMBER":
+        doc_bytes = raw_doc_bytes
         q_res = {"passed": True, "variance_score": 115.0, "reason": "Moderate Lighting"}
         mrz_res = MRZValidator.validate_type3_passport(
             "P<INDSHARMA<<KAPIL<<<<<<<<<<<<<<<<<<<<<<<<<<",
             "S4421098<2IND9102143M2705194<<<<<<<<<<<<<<1"
         )
-        f_res = forensics.analyze_document_forensics(doc_bytes)
+        f_res = AdvancedForensicsEngine.analyze_document_forensics(doc_bytes)
         f_res["tampering_detected"] = False
         f_res["ela_score"] = 9.2
         face_score = 74.0
         is_mule = False
 
     else:
-        q_res = quality_gate.evaluate(doc_bytes)
+        # STEP 0: DOCUMENT BOUNDARY & CREDENTIAL TYPE DETECTOR
+        det_res = DocumentDetector.inspect_and_crop(raw_doc_bytes)
+        if not det_res["valid_credential"]:
+            # IMMEDIATE REJECTION OF SCREENSHOTS / RANDOM IMAGES
+            audit_entry = CryptoAuditLogger.generate_audit_record(session_id, 99.0, "REJECTED_INVALID_CREDENTIAL", raw_doc_bytes)
+            return {
+                "session_id": session_id,
+                "processing_latency_sec": round(time.time() - start_time, 2),
+                "triage": {
+                    "action": "REJECT_INVALID_DOCUMENT",
+                    "lane_label": "⛔ REJECTED: NOT AN OFFICIAL CREDENTIAL",
+                    "indicator": "RED",
+                    "risk_score": 99.0
+                },
+                "explainable_breakdown": {
+                    "quality_risk": 100.0,
+                    "format_mrz_risk": 100.0,
+                    "tamper_forensic_risk": 0.0,
+                    "biometric_risk": 0.0,
+                    "identity_graph_risk": 0.0
+                },
+                "quality_gate": {"passed": False, "reason": det_res["reason"]},
+                "ocr_extraction": {"fields": {}},
+                "validation_badges": {"format": "FAILED", "checksum": "FAILED", "expiry": "N/A", "watchlist": "N/A"},
+                "forensics": {"tampering_detected": False, "ela_score": 0.0, "copy_move": {"detected": False, "vectors": []}, "font_consistency": {"anomaly_detected": False}},
+                "biometrics": {"face_match_confidence": 0.0, "liveness": "UNVERIFIED"},
+                "identity_graph": {"graph_detected": False},
+                "audit_ledger": audit_entry
+            }
+
+        doc_bytes = det_res["cropped_bytes"] if det_res["cropped_bytes"] else raw_doc_bytes
+        q_res = QualityGate().evaluate(doc_bytes)
         mrz_res = {"parsed": False, "valid": True}
         if mrz_line1 and mrz_line2:
             mrz_res = MRZValidator.validate_type3_passport(mrz_line1, mrz_line2)
-        f_res = forensics.analyze_document_forensics(doc_bytes)
+        f_res = AdvancedForensicsEngine.analyze_document_forensics(doc_bytes)
         face_score = 94.5
         is_mule = False
 
-    ocr_res = ocr.extract_fields(mrz_res)
-    graph_res = identity_graph.evaluate_identity_network(mrz_res.get("passport_number", "DOC"), is_mule)
+    ocr_res = OCRExtractorEngine.extract_fields(mrz_res)
+    graph_res = IdentityGraphEngine().evaluate_identity_network(mrz_res.get("passport_number", "DOC"), is_mule)
 
-    # 1. Base Multi-Vector Calculation
+    # Multi-Vector Composite Risk
     v_quality = 0.0 if q_res.get("passed") else 80.0
     v_mrz = 0.0 if mrz_res.get("valid", True) else 85.0
     v_forensics = 85.0 if f_res.get("tampering_detected") else 5.0
@@ -115,8 +148,7 @@ async def screen_traveler(
     raw_risk = (0.20 * v_quality) + (0.25 * v_mrz) + (0.35 * v_forensics) + (0.10 * v_biometrics) + (0.10 * v_graph)
     total_risk = round(min(100.0, raw_risk * graph_res.get("risk_multiplier", 1.0)), 2)
 
-    # 2. CRITICAL SAFETY OVERRIDES (FAIL-SAFE GATES)
-    # Agar Document Tampered hai ya Mule match hua, toh AUTO_CLEAR 100% IMPOSSIBLE hai
+    # STRICT SECURITY OVERRIDE
     if f_res.get("tampering_detected"):
         total_risk = max(total_risk, 78.5)
     elif not mrz_res.get("valid", True):
@@ -124,7 +156,6 @@ async def screen_traveler(
     elif is_mule:
         total_risk = max(total_risk, 88.0)
 
-    # 3. Triage Classification
     if total_risk < 25.0:
         triage = "AUTO_CLEAR"
         triage_lane = "🟢 LOW RISK → AUTO CLEAR"
