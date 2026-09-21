@@ -1,6 +1,8 @@
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 import uuid
+import os
 from typing import Optional
 
 from app.engine.quality import QualityGate
@@ -12,10 +14,9 @@ from app.core.crypto_audit import CryptoAuditLogger
 app = FastAPI(
     title="SeemaDrishti - Border Security Core API",
     description="Automated AI fake document, forensic tampering and biometric verification engine for SSB border checkposts.",
-    version="2.0.0"
+    version="2.1.0"
 )
 
-# CORS enabled for frontend integration
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -28,7 +29,15 @@ quality_gate = QualityGate()
 forensics = ForensicsEngine()
 biometrics = BiometricsEngine()
 
-@app.get("/")
+TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), "templates", "dashboard.html")
+
+@app.get("/", response_class=HTMLResponse)
+@app.get("/dashboard", response_class=HTMLResponse)
+def serve_dashboard():
+    with open(TEMPLATE_PATH, "r", encoding="utf-8") as f:
+        return HTMLResponse(content=f.read())
+
+@app.get("/api/v1/health")
 def health_check():
     return {
         "status": "OPERATIONAL",
@@ -51,9 +60,9 @@ async def screen_traveler(
     if not q_res["passed"]:
         return {
             "session_id": session_id,
-            "triage_status": "RETAKE",
+            "triage_summary": {"status": "RETAKE_DOCUMENT", "indicator": "AMBER", "overall_risk_score": 45.0},
             "quality_gate": q_res,
-            "message": "Immediate document recapture required due to blur or high glare."
+            "message": "Recapture required due to blur or severe lamination glare."
         }
 
     # Stage 2: MRZ Checksum Validation
@@ -61,11 +70,11 @@ async def screen_traveler(
     if mrz_line1 and mrz_line2:
         mrz_res = MRZValidator.validate_type3_passport(mrz_line1, mrz_line2)
 
-    # Stage 3: Tampering Forensics (ELA)
+    # Stage 3: Tampering Forensics (ELA + Heatmap generation)
     f_res = forensics.compute_ela_score(doc_bytes)
 
     # Stage 4: Biometric Matching & 1:N Mule Check
-    face_score = 92.5  # Default baseline if live face not supplied
+    face_score = 92.5
     mule_res = {"identity_mule_flag": False}
     if live_face_image:
         live_bytes = await live_face_image.read()
@@ -74,7 +83,6 @@ async def screen_traveler(
         mule_res = biometrics.check_1_to_n_mule(live_bytes, doc_num)
 
     # Stage 5: Weighted Risk Scoring
-    # 0.4 * Forensics + 0.3 * MRZ Check + 0.3 * Biometrics
     forensic_risk = 70.0 if f_res.get("tampering_detected") else 10.0
     mrz_risk = 0.0 if mrz_res.get("valid", True) else 80.0
     bio_risk = (100.0 - face_score) if face_score < 70.0 else 5.0
