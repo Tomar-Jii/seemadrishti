@@ -2,554 +2,459 @@
 <html lang="en" class="dark">
 <head>
   <meta charset="UTF-8">
-  <!-- Native App Viewport Lock (Prevents Pinch & Gesture Zoom) -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#09090b">
-
-  <title>SEEMADRISHTI | SSB Tactical Screening Terminal</title>
+  <title>SEEMADRISHTI | Command AI Terminal</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    /* Prevent web zooming and make it feel like an installed app */
-    * {
-      touch-action: manipulation;
-      -webkit-tap-highlight-color: transparent;
-      box-sizing: border-box;
-    }
-    html, body {
-      overflow-x: hidden;
-      width: 100%;
-      max-width: 100vw;
-      font-family: 'Inter', sans-serif;
-      touch-action: pan-y;
-      -webkit-user-select: none;
-      user-select: none;
-      overscroll-behavior-y: none;
-    }
+    * { touch-action: manipulation; box-sizing: border-box; }
+    html, body { overflow-x: hidden; width: 100vw; font-family: 'Inter', sans-serif; -webkit-user-select: none; user-select: none; }
     .mono { font-family: 'JetBrains Mono', monospace; }
-    
-    /* CRITICAL: Font size must be 16px on mobile inputs to prevent browser auto-zoom jump */
-    input, select, textarea {
-      font-size: 16px !important;
-      user-select: text;
-      -webkit-user-select: text;
-    }
+    input { font-size: 16px !important; }
 
-    /* Smooth horizontal scrollbar hiding for app-like pill bars */
+    /* Futuristic Scanline Laser Animation */
+    @keyframes laserSweep {
+      0% { top: 0%; opacity: 0; }
+      15% { opacity: 1; }
+      85% { opacity: 1; }
+      100% { top: 96%; opacity: 0; }
+    }
+    .laser-scan {
+      position: absolute;
+      left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, transparent, #10b981, #34d399, #10b981, transparent);
+      box-shadow: 0 0 15px #10b981, 0 0 30px #10b981;
+      animation: laserSweep 1.8s ease-in-out infinite alternate;
+    }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-    @media print {
-      body * { visibility: hidden; }
-      #dossierPrintArea, #dossierPrintArea * { visibility: visible; }
-      #dossierPrintArea { position: absolute; left: 0; top: 0; width: 100%; }
-    }
   </style>
 </head>
-<body class="bg-zinc-950 text-zinc-100 min-h-screen flex flex-col antialiased selection:bg-emerald-500 selection:text-black">
+<body class="bg-zinc-950 text-zinc-100 min-h-screen flex flex-col antialiased">
 
-  <!-- Tactical Header -->
-  <header class="border-b border-zinc-800 bg-zinc-900/80 backdrop-blur px-4 py-2.5 flex flex-col gap-2">
+  <!-- Command Header (Clip 1 & 2) -->
+  <header class="border-b border-zinc-800 bg-zinc-900/90 backdrop-blur px-4 py-2.5 flex flex-col gap-2">
     <div class="flex items-center justify-between">
-      <div class="flex items-center gap-2.5">
-        <div id="nodeIndicator" class="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
-        <h1 class="text-sm font-bold tracking-wider uppercase text-zinc-200">
-          SEEMADRISHTI <span class="text-zinc-500 font-normal text-xs">| SSB HUD</span>
-        </h1>
+      <div class="flex items-center gap-3">
+        <div class="h-3 w-3 rounded-full bg-emerald-500 shadow-[0_0_12px_#10b981] animate-pulse"></div>
+        <div>
+          <h1 class="text-sm font-bold tracking-wider uppercase text-zinc-100 flex items-center gap-2">
+            SEEMADRISHTI <span class="text-[10px] px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 mono">SIH26188</span>
+          </h1>
+          <div class="text-[10px] text-zinc-400 mono">TEAM DA VINCI CODE | SSB BORDER SEC TERMINAL #04</div>
+        </div>
       </div>
 
-      <div class="flex items-center gap-2 text-xs mono">
-        <label class="cursor-pointer flex items-center gap-1.5 text-zinc-300">
-          <input type="checkbox" id="offlineSwitch" class="h-3.5 w-3.5 rounded bg-zinc-900 border-zinc-700 text-amber-500 focus:ring-0">
-          <span class="text-[10px] text-zinc-400">OFFLINE</span>
-        </label>
-        <div id="nodeStatusBadge" class="px-2 py-0.5 bg-zinc-800 rounded border border-zinc-700 text-[10px] text-zinc-300">ONLINE</div>
+      <div class="flex items-center gap-2 mono text-xs">
+        <div class="px-2.5 py-1 bg-zinc-950 border border-zinc-800 rounded text-[11px] text-zinc-300">
+          STATUS: <span class="text-emerald-400">ACTIVE DEFENSE</span>
+        </div>
       </div>
     </div>
 
-    <!-- 1-Click Jury Presets (Native Horizontal Scrollable Pill Bar) -->
-    <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 text-xs">
-      <span class="text-[10px] mono text-zinc-500 shrink-0 font-bold">PRESETS:</span>
-      <button onclick="runPreset('CLEAN')" class="shrink-0 px-2.5 py-1 bg-emerald-950 text-emerald-300 border border-emerald-800 rounded-md font-medium active:scale-95 text-xs">1. Clean ID</button>
-      <button onclick="runPreset('TAMPERED')" class="shrink-0 px-2.5 py-1 bg-red-950 text-red-300 border border-red-800 rounded-md font-medium active:scale-95 text-xs">2. VIZ Mismatch</button>
-      <button onclick="runPreset('VISA_FORGERY')" class="shrink-0 px-2.5 py-1 bg-purple-950 text-purple-300 border border-purple-800 rounded-md font-medium active:scale-95 text-xs">3. Fake Stamp</button>
-      <button onclick="runPreset('MULE')" class="shrink-0 px-2.5 py-1 bg-amber-950 text-amber-300 border border-amber-800 rounded-md font-medium active:scale-95 text-xs">4. Mule</button>
-      <button onclick="runPreset('INTERPOL_HIT')" class="shrink-0 px-2.5 py-1 bg-rose-950 text-rose-300 border border-rose-800 rounded-md font-bold active:scale-95 text-xs">5. Interpol Hit</button>
+    <!-- Cinematic Presets Pill Bar -->
+    <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 text-xs">
+      <span class="text-[10px] mono text-zinc-500 shrink-0 font-bold">CINEMATIC PRESETS:</span>
+      <button onclick="runScenario('CLEAN')" class="shrink-0 px-3 py-1 bg-emerald-950 text-emerald-300 border border-emerald-800 rounded-md font-medium text-xs active:scale-95">✓ 1. Valid Passport (Auto-Clear)</button>
+      <button onclick="runScenario('TAMPERED')" class="shrink-0 px-3 py-1 bg-red-950 text-red-300 border border-red-800 rounded-md font-bold text-xs active:scale-95">🚨 2. Spliced DOB & Clone Stamp</button>
+      <button onclick="runScenario('MULE')" class="shrink-0 px-3 py-1 bg-amber-950 text-amber-300 border border-amber-800 rounded-md font-bold text-xs active:scale-95">🕸️ 3. Cross-Doc Mule Syndicate</button>
     </div>
   </header>
 
-  <!-- Watchlist Critical Banner -->
-  <div id="interpolBanner" class="hidden bg-red-600 text-white px-4 py-2 flex items-center justify-between font-bold mono text-xs uppercase tracking-wider animate-pulse">
-    <div class="flex items-center gap-2 truncate">
-      <span>🚨 WATCHLIST ALERT:</span>
-      <span id="interpolDetails" class="truncate">Wanted Red Notice</span>
-    </div>
-  </div>
-
-  <!-- Main Container -->
+  <!-- Main Multi-Layer Grid (Clips 3 to 9) -->
   <main class="flex-1 p-4 grid grid-cols-1 lg:grid-cols-12 gap-4 max-w-[1800px] w-full mx-auto">
     
-    <!-- Left Column: Ingestion Controls (4 cols) -->
+    <!-- Left Column: Ingestion & OCR Structured Extraction (4 cols) -->
     <div class="lg:col-span-4 flex flex-col gap-4">
-      <div class="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 flex flex-col gap-3">
-        <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-400 mono flex items-center justify-between">
-          <span>01. Ingestion Control</span>
-          <span class="text-emerald-400">VIZ & MRZ SYNC</span>
-        </h2>
+      
+      <!-- Ingestion Card -->
+      <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-4 flex flex-col gap-3">
+        <div class="flex items-center justify-between border-b border-zinc-800 pb-2">
+          <span class="text-xs font-bold uppercase tracking-wider mono text-zinc-300">01. ID Scanner Ingestion</span>
+          <span class="text-[10px] mono text-emerald-400">HIGH-RES DIGITAL</span>
+        </div>
 
         <form id="screenForm" class="flex flex-col gap-3">
           <div>
-            <div class="flex justify-between items-center mb-1">
-              <label class="text-xs font-medium text-zinc-300">Primary ID / Passport</label>
-              <button type="button" onclick="startWebcam('doc')" class="text-[10px] text-emerald-400 hover:underline mono font-semibold">USE CAMERA</button>
-            </div>
+            <label class="block text-xs font-medium text-zinc-300 mb-1">Upload Scanned Document</label>
             <input type="file" id="docInput" accept="image/*" class="block w-full text-xs text-zinc-400 file:mr-2 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-zinc-800 file:text-zinc-200 cursor-pointer bg-zinc-950 border border-zinc-800 rounded p-1">
           </div>
 
-          <div>
-            <label class="block text-xs font-medium text-zinc-300 mb-1">Visa / Permit Slip (Stamp Forensics)</label>
-            <input type="file" id="visaInput" accept="image/*" class="block w-full text-xs text-zinc-400 file:mr-2 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-zinc-800 file:text-zinc-200 cursor-pointer bg-zinc-950 border border-zinc-800 rounded p-1">
-          </div>
-
-          <div>
-            <div class="flex justify-between items-center mb-1">
-              <label class="text-xs font-medium text-zinc-300">Live Kiosk Camera</label>
-              <button type="button" onclick="startWebcam('face')" class="text-[10px] text-emerald-400 hover:underline mono font-semibold">USE KIOSK</button>
-            </div>
-            <input type="file" id="faceInput" accept="image/*" class="block w-full text-xs text-zinc-400 file:mr-2 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-zinc-800 file:text-zinc-200 cursor-pointer bg-zinc-950 border border-zinc-800 rounded p-1">
-          </div>
-
-          <!-- VIZ Fields for Cross-Verification -->
-          <div class="grid grid-cols-2 gap-2 pt-1 border-t border-zinc-800">
-            <div>
-              <label class="block text-[10px] text-zinc-400 mono">Visual Printed Name</label>
-              <input type="text" id="vizName" placeholder="ARYAN TOMAR" class="w-full text-xs mono px-2.5 py-1.5 bg-zinc-950 border border-zinc-800 rounded text-zinc-200 uppercase outline-none focus:border-emerald-500">
-            </div>
-            <div>
-              <label class="block text-[10px] text-zinc-400 mono">Visual Printed DOB</label>
-              <input type="text" id="vizDob" placeholder="05/04/2008" class="w-full text-xs mono px-2.5 py-1.5 bg-zinc-950 border border-zinc-800 rounded text-zinc-200 uppercase outline-none focus:border-emerald-500">
-            </div>
-          </div>
-
           <div class="grid grid-cols-1 gap-1.5">
-            <label class="block text-[10px] text-zinc-400 mono">MRZ Code Lines</label>
-            <input type="text" id="mrz1" placeholder="Line 1: P<INDTOMAR<<ARYAN..." class="w-full text-xs mono px-2.5 py-1.5 bg-zinc-950 border border-zinc-800 rounded text-zinc-200 uppercase outline-none focus:border-emerald-500">
-            <input type="text" id="mrz2" placeholder="Line 2: Z1234567<8IND080405..." class="w-full text-xs mono px-2.5 py-1.5 bg-zinc-950 border border-zinc-800 rounded text-zinc-200 uppercase outline-none focus:border-emerald-500">
+            <label class="block text-[10px] text-zinc-400 mono">MRZ Line 1 & Line 2</label>
+            <input type="text" id="mrz1" placeholder="P<INDTOMAR<<ARYAN..." class="w-full text-xs mono px-2.5 py-1.5 bg-zinc-950 border border-zinc-800 rounded text-zinc-200 uppercase outline-none focus:border-emerald-500">
+            <input type="text" id="mrz2" placeholder="Z1234567<8IND080405..." class="w-full text-xs mono px-2.5 py-1.5 bg-zinc-950 border border-zinc-800 rounded text-zinc-200 uppercase outline-none focus:border-emerald-500">
           </div>
 
-          <button type="submit" id="submitBtn" class="w-full text-xs py-3 bg-emerald-600 active:bg-emerald-700 rounded-lg font-bold text-black tracking-wide mt-1">EXECUTE SCREENING</button>
+          <button type="submit" id="submitBtn" class="w-full text-xs py-2.5 bg-emerald-500 hover:bg-emerald-400 rounded-lg font-bold text-black tracking-wide">RUN MULTI-LAYER SCREENING</button>
         </form>
       </div>
 
-      <!-- Stamp & Checksum Status -->
-      <div class="bg-zinc-900/50 border border-zinc-800 rounded-xl p-3.5 flex flex-col gap-2">
-        <h3 class="text-xs font-semibold uppercase tracking-wider text-zinc-400 mono">02. Cross-Zone & Stamp Status</h3>
-        <div id="vizDetails" class="text-xs mono text-zinc-400">
-          <div>VIZ vs MRZ: <span id="vizVerdict" class="text-zinc-500 font-bold">AWAITING SCAN</span></div>
-          <div id="vizMismatchText" class="text-[11px] text-red-400 mt-0.5"></div>
+      <!-- Clip 4: OCR Extraction Card -->
+      <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-4 flex flex-col gap-2">
+        <div class="flex items-center justify-between border-b border-zinc-800 pb-1.5">
+          <span class="text-xs font-bold uppercase tracking-wider mono text-zinc-300">02. OCR Structured Data</span>
+          <span class="text-[10px] mono text-emerald-400">PADDLE-OCR / ICAO</span>
         </div>
-        <div id="stampDetails" class="text-xs mono text-zinc-400 border-t border-zinc-800 pt-1.5">
-          <div>STAMP INK: <span id="stampVerdict" class="text-zinc-500 font-bold">--</span></div>
+        <div id="ocrFields" class="grid grid-cols-2 gap-2 text-xs mono pt-1">
+          <div class="bg-zinc-950 p-2 rounded border border-zinc-800/80">
+            <div class="text-[10px] text-zinc-500">TRAVELER NAME</div>
+            <div id="fName" class="text-zinc-200 font-bold truncate">--</div>
+          </div>
+          <div class="bg-zinc-950 p-2 rounded border border-zinc-800/80">
+            <div class="text-[10px] text-zinc-500">DOCUMENT NUMBER</div>
+            <div id="fDoc" class="text-zinc-200 font-bold">--</div>
+          </div>
+          <div class="bg-zinc-950 p-2 rounded border border-zinc-800/80">
+            <div class="text-[10px] text-zinc-500">DATE OF BIRTH</div>
+            <div id="fDob" class="text-zinc-200 font-bold">--</div>
+          </div>
+          <div class="bg-zinc-950 p-2 rounded border border-zinc-800/80">
+            <div class="text-[10px] text-zinc-500">EXPIRY DATE</div>
+            <div id="fExp" class="text-zinc-200 font-bold">--</div>
+          </div>
         </div>
       </div>
+
+      <!-- Clip 5: Document Validation Badges -->
+      <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-4 flex flex-col gap-2">
+        <span class="text-xs font-bold uppercase tracking-wider mono text-zinc-300">03. Automated Validation Gates</span>
+        <div class="grid grid-cols-2 gap-2 text-xs mono pt-1">
+          <div class="bg-zinc-950 p-2 rounded border border-zinc-800 flex justify-between items-center">
+            <span class="text-zinc-400">✓ FORMAT:</span>
+            <span id="vFormat" class="font-bold text-zinc-400">--</span>
+          </div>
+          <div class="bg-zinc-950 p-2 rounded border border-zinc-800 flex justify-between items-center">
+            <span class="text-zinc-400">✓ CHECKSUM:</span>
+            <span id="vChecksum" class="font-bold text-zinc-400">--</span>
+          </div>
+          <div class="bg-zinc-950 p-2 rounded border border-zinc-800 flex justify-between items-center">
+            <span class="text-zinc-400">✓ EXPIRY:</span>
+            <span id="vExpiry" class="font-bold text-zinc-400">--</span>
+          </div>
+          <div class="bg-zinc-950 p-2 rounded border border-zinc-800 flex justify-between items-center">
+            <span class="text-zinc-400">✓ WATCHLIST:</span>
+            <span id="vWatchlist" class="font-bold text-zinc-400">--</span>
+          </div>
+        </div>
+      </div>
+
     </div>
 
-    <!-- Center Column: Forensics & Heatmap (5 cols) -->
+    <!-- Center Column: Multi-Model Forensic Lab (Clips 6 & 7) (5 cols) -->
     <div class="lg:col-span-5 flex flex-col gap-4">
-      <div class="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 flex flex-col gap-3 flex-1">
+      <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-4 flex flex-col gap-3 flex-1">
         <div class="flex items-center justify-between">
-          <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-400 mono">03. Forensics & ELA</h2>
+          <span class="text-xs font-bold uppercase tracking-wider mono text-zinc-300">04. Forensic Diagnostics Visualizer</span>
           <div class="flex gap-1.5">
-            <button id="tabDoc" onclick="toggleView('doc')" class="text-xs px-2 py-1 bg-zinc-800 text-zinc-200 rounded font-medium">Scanned ID</button>
-            <button id="tabEla" onclick="toggleView('ela')" class="text-xs px-2 py-1 bg-zinc-950 text-zinc-400 rounded font-medium border border-zinc-800">ELA Heatmap</button>
+            <button id="btnViewDoc" onclick="switchForensicView('doc')" class="text-xs px-2.5 py-1 bg-zinc-800 text-zinc-200 rounded font-medium">Scanned ID</button>
+            <button id="btnViewEla" onclick="switchForensicView('ela')" class="text-xs px-2.5 py-1 bg-zinc-950 text-zinc-400 border border-zinc-800 rounded font-medium">ELA Heatmap</button>
           </div>
         </div>
 
-        <div class="relative w-full h-[280px] sm:h-[340px] bg-zinc-950 rounded-lg border border-zinc-800 flex items-center justify-center overflow-hidden">
+        <!-- Viewport with Interactive Laser & Visual Tampering Vectors -->
+        <div class="relative w-full h-[320px] sm:h-[380px] bg-zinc-950 rounded-lg border border-zinc-800 flex items-center justify-center overflow-hidden">
+          <div id="laserLine" class="laser-scan hidden pointer-events-none"></div>
+          
           <img id="docPreview" class="max-h-full max-w-full object-contain" style="display:none;" />
           <img id="elaPreview" class="max-h-full max-w-full object-contain hidden" />
-          <div id="noImagePrompt" class="text-xs text-zinc-600 mono">NO SCAN INGESTED</div>
-          <div id="boxOverlay" class="absolute inset-0 pointer-events-none hidden border-2 border-red-500 bg-red-500/15 rounded">
-            <span class="absolute top-1 left-1 bg-red-600 text-white text-[10px] px-1 py-0.5 rounded mono font-bold">TAMPERED REGION</span>
-          </div>
+          <div id="emptyPrompt" class="text-xs text-zinc-600 mono">AWAITING SCAN INGESTION</div>
+
+          <!-- SIFT Copy-Move / Tamper Overlay Canvas -->
+          <canvas id="overlayCanvas" class="absolute inset-0 pointer-events-none w-full h-full"></canvas>
         </div>
 
-        <div class="grid grid-cols-2 gap-2 text-xs mono">
-          <div class="bg-zinc-950 p-2.5 rounded border border-zinc-800">
-            <div class="text-zinc-500 text-[10px]">IMAGE QUALITY</div>
-            <div id="qScore" class="text-zinc-300 font-bold mt-0.5">--</div>
+        <!-- 4-Model Forensic Metrics Readout -->
+        <div class="grid grid-cols-3 gap-2 text-xs mono">
+          <div class="bg-zinc-950 p-2.5 rounded border border-zinc-800 text-center">
+            <div class="text-[10px] text-zinc-500">ELA DIVERGENCE</div>
+            <div id="mEla" class="text-zinc-200 font-bold mt-1">--</div>
           </div>
-          <div class="bg-zinc-950 p-2.5 rounded border border-zinc-800">
-            <div class="text-zinc-500 text-[10px]">ELA RESIDUAL</div>
-            <div id="elaScore" class="text-zinc-300 font-bold mt-0.5">--</div>
+          <div class="bg-zinc-950 p-2.5 rounded border border-zinc-800 text-center">
+            <div class="text-[10px] text-zinc-500">COPY-MOVE (SIFT)</div>
+            <div id="mCopyMove" class="text-zinc-200 font-bold mt-1">--</div>
+          </div>
+          <div class="bg-zinc-950 p-2.5 rounded border border-zinc-800 text-center">
+            <div class="text-[10px] text-zinc-500">FONT CONSISTENCY</div>
+            <div id="mFont" class="text-zinc-200 font-bold mt-1">--</div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Right Column: Triage & Alarms (3 cols) -->
+    <!-- Right Column: Biometrics, Identity Graph & Explainable Risk (Clips 8 & 9) (3 cols) -->
     <div class="lg:col-span-3 flex flex-col gap-4">
-      <div id="triageCard" class="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 flex flex-col items-center justify-center text-center gap-1.5">
-        <span class="text-[10px] mono uppercase text-zinc-500 tracking-widest">Triage Action</span>
-        <div id="triageStatus" class="text-lg font-bold mono text-zinc-400">READY</div>
-        <div id="riskScore" class="text-xs mono text-zinc-500">System idle</div>
+      
+      <!-- Triage Banner -->
+      <div id="triageCard" class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-4 flex flex-col items-center justify-center text-center gap-1">
+        <span class="text-[10px] mono uppercase text-zinc-500 tracking-widest">DECISION TRIAGE</span>
+        <div id="triageText" class="text-lg font-bold mono text-zinc-400">READY</div>
+        <div id="triageScore" class="text-xs mono text-zinc-500">No scan active</div>
       </div>
 
-      <div class="bg-zinc-900/50 border border-zinc-800 rounded-xl p-3.5 flex flex-col gap-2">
-        <h3 class="text-xs font-semibold uppercase tracking-wider text-zinc-400 mono">04. Biometrics & Radar</h3>
+      <!-- Clip 8: Face Verification -->
+      <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-3.5 flex flex-col gap-2">
+        <span class="text-xs font-bold uppercase tracking-wider mono text-zinc-300">05. Live Face ↔ Doc Photo</span>
         <div class="flex justify-between items-center text-xs mono">
-          <span class="text-zinc-400">Cosine Match:</span>
-          <span id="faceScore" class="text-zinc-200 font-bold">--</span>
+          <span class="text-zinc-400">ArcFace Cosine Match:</span>
+          <span id="faceConfidence" class="text-zinc-200 font-bold">--</span>
         </div>
         <div class="flex justify-between items-center text-xs mono">
-          <span class="text-zinc-400">Mule Watchlist:</span>
-          <span id="muleStatus" class="text-zinc-200 font-bold">CLEAR</span>
-        </div>
-        <div class="flex justify-between items-center text-xs mono">
-          <span class="text-zinc-400">Interpol SLTD:</span>
-          <span id="sltdStatus" class="text-zinc-200 font-bold">NO HIT</span>
+          <span class="text-zinc-400">Passive Liveness:</span>
+          <span id="faceLiveness" class="text-emerald-400 font-bold">PASSED</span>
         </div>
       </div>
 
-      <div class="bg-zinc-900/50 border border-zinc-800 rounded-xl p-3.5 flex flex-col gap-2 flex-1">
-        <div class="flex justify-between items-center">
-          <h3 class="text-xs font-semibold uppercase tracking-wider text-zinc-400 mono">05. Audit Ledger</h3>
-          <div class="flex gap-2">
-            <button onclick="triggerBatchSync()" class="text-[10px] mono text-amber-400 hover:underline">SYNC</button>
-            <button onclick="verifyLedgerLive()" class="text-[10px] mono text-emerald-400 hover:underline">VERIFY</button>
+      <!-- Clip 9: AI Identity Graph (Mule Syndicate Linker) -->
+      <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-3.5 flex flex-col gap-2 flex-1">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold uppercase tracking-wider mono text-zinc-300">06. Cross-Doc Identity Graph</span>
+          <span id="graphStatus" class="text-[10px] mono text-zinc-400">CLEAR</span>
+        </div>
+        
+        <!-- Graph Interactive Visualizer -->
+        <div class="h-28 bg-zinc-950 rounded border border-zinc-800 relative overflow-hidden flex items-center justify-center">
+          <canvas id="graphCanvas" class="w-full h-full"></canvas>
+          <div id="graphEmpty" class="text-[10px] text-zinc-600 mono absolute">1:N GRAPH SYNCHRONIZED</div>
+        </div>
+
+        <!-- Explainable Risk Score Breakdown (Clip 9) -->
+        <div class="space-y-1 pt-1 text-[11px] mono">
+          <div class="text-zinc-500 text-[10px] uppercase font-bold">EXPLAINABLE RISK SIGNALS</div>
+          <div class="flex justify-between text-zinc-400">
+            <span>Tampering Forensics:</span>
+            <span id="rForensics" class="text-zinc-200">--</span>
+          </div>
+          <div class="flex justify-between text-zinc-400">
+            <span>MRZ & Checksum Gate:</span>
+            <span id="rMrz" class="text-zinc-200">--</span>
+          </div>
+          <div class="flex justify-between text-zinc-400">
+            <span>Identity Graph Mule:</span>
+            <span id="rGraph" class="text-zinc-200">--</span>
           </div>
         </div>
-        <div id="auditBox" class="text-[10px] mono bg-zinc-950 p-2 rounded border border-zinc-800 text-zinc-400 break-all h-16 overflow-y-auto">
-          No session commit yet.
-        </div>
-        <button id="dossierBtn" onclick="openDossierModal()" disabled class="w-full text-xs py-2 bg-zinc-800 hover:bg-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed rounded font-semibold text-zinc-200 border border-zinc-700 mt-auto">
-          GENERATE SSB DOSSIER (PRINT)
-        </button>
+
       </div>
+
     </div>
 
   </main>
 
-  <!-- Dossier Modal -->
-  <div id="dossierModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-zinc-900 border border-zinc-700 rounded-xl max-w-xl w-full p-5 text-zinc-100 flex flex-col gap-4">
-      <div id="dossierPrintArea" class="space-y-3">
-        <div class="border-b border-zinc-700 pb-2 flex justify-between items-start">
-          <div>
-            <h2 class="text-sm font-bold tracking-wide uppercase">SSB BORDER SURVEILLANCE REPORT</h2>
-            <div class="text-[10px] text-zinc-400 mono">SASHASTRA SEEMA BAL | POLICE II DIVISION</div>
-          </div>
-          <span id="dosVerdictBadge" class="text-xs px-2 py-0.5 font-bold rounded mono">CRITICAL</span>
-        </div>
-        <div class="grid grid-cols-2 gap-2 text-[11px] mono bg-zinc-950 p-2.5 rounded border border-zinc-800">
-          <div>SESSION: <span id="dosSession" class="text-zinc-200 font-bold">--</span></div>
-          <div>TIMESTAMP: <span id="dosTime" class="text-zinc-200">--</span></div>
-          <div>CHECKPOINT: <span class="text-zinc-200">RAXAUL</span></div>
-          <div>RISK SCORE: <span id="dosRisk" class="text-zinc-200 font-bold">--</span></div>
-        </div>
-        <div class="text-[11px] space-y-1 mono text-zinc-300">
-          <div>DOCUMENT ID: <span id="dosDocNum" class="font-bold">--</span></div>
-          <div>VIOLATION: <span id="dosSummary" class="text-red-400">Tampering detected</span></div>
-          <div class="text-[9px] text-zinc-500 break-all">SHA-256: <span id="dosHash">--</span></div>
-        </div>
-      </div>
-      <div class="flex gap-2 pt-2 border-t border-zinc-800">
-        <button onclick="window.print()" class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-500 text-black text-xs font-bold rounded">PRINT DOSSIER</button>
-        <button onclick="closeDossierModal()" class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs rounded">CLOSE</button>
-      </div>
-    </div>
-  </div>
-
   <script>
-    let currentSessionData = null;
+    let currentForensicView = 'doc';
 
-    // Toggle Offline Switch
-    document.getElementById('offlineSwitch').onchange = (e) => {
-      const isOff = e.target.checked;
-      document.getElementById('nodeStatusBadge').innerText = isOff ? "OFFLINE" : "ONLINE";
-      document.getElementById('nodeStatusBadge').className = isOff ? "px-2 py-0.5 bg-amber-950 border border-amber-700 text-amber-300 rounded text-[10px]" : "px-2 py-0.5 bg-zinc-800 rounded border border-zinc-700 text-zinc-300 text-[10px]";
-      document.getElementById('nodeIndicator').className = isOff ? "h-2.5 w-2.5 rounded-full bg-amber-500 animate-pulse" : "h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse";
-    };
+    function switchForensicView(mode) {
+      currentForensicView = mode;
+      const doc = document.getElementById('docPreview');
+      const ela = document.getElementById('elaPreview');
+      const bDoc = document.getElementById('btnViewDoc');
+      const bEla = document.getElementById('btnViewEla');
 
-    function playTacticalAudio(type) {
-      try {
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-
-        if (type === 'ALERT') {
-          osc.type = 'sawtooth';
-          osc.frequency.setValueAtTime(880, audioCtx.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.35);
-          gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-          gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
-          osc.start();
-          osc.stop(audioCtx.currentTime + 0.35);
-        } else {
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(520, audioCtx.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(1040, audioCtx.currentTime + 0.15);
-          gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
-          gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-          osc.start();
-          osc.stop(audioCtx.currentTime + 0.15);
-        }
-      } catch(e) {}
+      if (mode === 'doc') {
+        doc.classList.remove('hidden'); ela.classList.add('hidden');
+        bDoc.className = "text-xs px-2.5 py-1 bg-zinc-800 text-zinc-200 rounded font-medium";
+        bEla.className = "text-xs px-2.5 py-1 bg-zinc-950 text-zinc-400 border border-zinc-800 rounded font-medium";
+      } else {
+        doc.classList.add('hidden'); ela.classList.remove('hidden');
+        bEla.className = "text-xs px-2.5 py-1 bg-zinc-800 text-zinc-200 rounded font-medium";
+        bDoc.className = "text-xs px-2.5 py-1 bg-zinc-950 text-zinc-400 border border-zinc-800 rounded font-medium";
+      }
     }
 
-    function runPreset(type) {
+    function runScenario(type) {
       const canvas = document.createElement('canvas');
-      canvas.width = 400; canvas.height = 260;
+      canvas.width = 440; canvas.height = 280;
       const ctx = canvas.getContext('2d');
-      ctx.fillStyle = (type === 'TAMPERED' || type === 'INTERPOL_HIT') ? '#451a1a' : '#1e293b';
-      ctx.fillRect(0, 0, 400, 260);
-      ctx.fillStyle = '#ffffff'; ctx.font = '16px monospace';
-      ctx.fillText("REPUBLIC OF INDIA - TRAVEL DOCUMENT", 25, 40);
-      ctx.font = '12px monospace';
-
-      if (type === 'INTERPOL_HIT') {
-        ctx.fillText("NAME: VIKRAM MALHOTRA", 30, 90);
-        ctx.fillText("DOB: 10/03/1985", 30, 120);
-        ctx.fillText("PASSPORT: Z9912044", 30, 150);
-        document.getElementById('vizName').value = "VIKRAM MALHOTRA";
-        document.getElementById('vizDob').value = "10/03/1985";
-        document.getElementById('mrz1').value = "P<INDMALHOTRA<<VIKRAM<<<<<<<<<<<<<<<<<<<<<<<";
-        document.getElementById('mrz2').value = "Z9912044<1IND8503104M2710192<<<<<<<<<<<<<<0";
-      } else if (type === 'TAMPERED') {
-        ctx.fillText("NAME: ARYAN TOMAR", 30, 90);
-        ctx.fillText("DOB: 12/05/1998 [SCRAPED]", 30, 120);
-        ctx.fillText("PASSPORT: P8921443", 30, 150);
-        document.getElementById('vizName').value = "ARYAN TOMAR";
-        document.getElementById('vizDob').value = "12/05/1998";
+      ctx.fillStyle = (type === 'TAMPERED' || type === 'MULE') ? '#381616' : '#14233c';
+      ctx.fillRect(0, 0, 440, 280);
+      
+      ctx.fillStyle = '#ffffff'; ctx.font = 'bold 15px monospace';
+      ctx.fillText("REPUBLIC OF INDIA - TRAVEL DOCUMENT", 30, 45);
+      ctx.font = '13px monospace';
+      
+      if (type === 'TAMPERED') {
+        ctx.fillText("NAME: ARYAN TOMAR", 35, 100);
+        ctx.fillText("DOB: 12/05/1998 [SPLICED]", 35, 135);
+        ctx.fillText("DOC: P8921443", 35, 170);
         document.getElementById('mrz1').value = "P<INDTOMAR<<ARYAN<<<<<<<<<<<<<<<<<<<<<<<<<<<";
         document.getElementById('mrz2').value = "P8921443<1IND9805128M2809214<<<<<<<<<<<<<<0";
+      } else if (type === 'MULE') {
+        ctx.fillText("NAME: ROHIT VERMA", 35, 100);
+        ctx.fillText("DOB: 15/08/1994", 35, 135);
+        ctx.fillText("DOC: Z8834112", 35, 170);
+        document.getElementById('mrz1').value = "P<INDVERMA<<ROHIT<<<<<<<<<<<<<<<<<<<<<<<<<<<";
+        document.getElementById('mrz2').value = "Z8834112<4IND9408152M2911181<<<<<<<<<<<<<<2";
       } else {
-        ctx.fillText("NAME: ARYAN TOMAR", 30, 90);
-        ctx.fillText("DOB: 05/04/2008", 30, 120);
-        ctx.fillText("DOC: Z1234567", 30, 150);
-        document.getElementById('vizName').value = "ARYAN TOMAR";
-        document.getElementById('vizDob').value = "05/04/2008";
+        ctx.fillText("NAME: ARYAN TOMAR", 35, 100);
+        ctx.fillText("DOB: 05/04/2008", 35, 135);
+        ctx.fillText("DOC: Z1234567", 35, 170);
         document.getElementById('mrz1').value = "P<INDTOMAR<<ARYAN<<<<<<<<<<<<<<<<<<<<<<<<<<<";
         document.getElementById('mrz2').value = "Z1234567<8IND0804051M2809214<<<<<<<<<<<<<<0";
       }
 
       canvas.toBlob(blob => {
-        const file = new File([blob], "preset_doc.jpg", { type: "image/jpeg" });
+        const file = new File([blob], "passport_screen.jpg", { type: "image/jpeg" });
         const dt = new DataTransfer();
         dt.items.add(file);
         document.getElementById('docInput').files = dt.files;
         document.getElementById('docPreview').src = canvas.toDataURL();
         document.getElementById('docPreview').style.display = 'block';
-        document.getElementById('noImagePrompt').style.display = 'none';
+        document.getElementById('emptyPrompt').style.display = 'none';
 
-        executeScreening(type);
+        executeMultiLayerPipeline(type);
       });
     }
 
-    function toggleView(mode) {
-      const doc = document.getElementById('docPreview');
-      const ela = document.getElementById('elaPreview');
-      const tabDoc = document.getElementById('tabDoc');
-      const tabEla = document.getElementById('tabEla');
-      if(mode === 'doc') {
-        doc.classList.remove('hidden'); ela.classList.add('hidden');
-        tabDoc.className = "text-xs px-2 py-1 bg-zinc-800 text-zinc-200 rounded font-medium";
-        tabEla.className = "text-xs px-2 py-1 bg-zinc-950 text-zinc-400 rounded font-medium border border-zinc-800";
-      } else {
-        doc.classList.add('hidden'); ela.classList.remove('hidden');
-        tabEla.className = "text-xs px-2 py-1 bg-zinc-800 text-zinc-200 rounded font-medium";
-        tabDoc.className = "text-xs px-2 py-1 bg-zinc-950 text-zinc-400 rounded font-medium border border-zinc-800";
-      }
-    }
-
-    document.getElementById('docInput').onchange = e => {
-      const [file] = e.target.files;
-      if (file) {
-        document.getElementById('docPreview').src = URL.createObjectURL(file);
-        document.getElementById('docPreview').style.display = 'block';
-        document.getElementById('noImagePrompt').style.display = 'none';
-      }
-    };
-
     document.getElementById('screenForm').onsubmit = (e) => {
       e.preventDefault();
-      executeScreening(null);
+      executeMultiLayerPipeline(null);
     };
 
-    async function executeScreening(presetMode) {
+    async function executeMultiLayerPipeline(presetType) {
       const btn = document.getElementById('submitBtn');
-      btn.innerText = "PROCESSING...";
+      const laser = document.getElementById('laserLine');
+      laser.classList.remove('hidden');
+      btn.innerText = "EXECUTING 9-CLIP PIPELINE...";
       btn.disabled = true;
 
       const fd = new FormData();
       fd.append('document_image', document.getElementById('docInput').files[0]);
-      if(document.getElementById('visaInput').files[0]) fd.append('visa_image', document.getElementById('visaInput').files[0]);
-      if(document.getElementById('faceInput').files[0]) fd.append('live_face_image', document.getElementById('faceInput').files[0]);
       if(document.getElementById('mrz1').value) fd.append('mrz_line1', document.getElementById('mrz1').value);
       if(document.getElementById('mrz2').value) fd.append('mrz_line2', document.getElementById('mrz2').value);
-      if(document.getElementById('vizName').value) fd.append('visual_name', document.getElementById('vizName').value);
-      if(document.getElementById('vizDob').value) fd.append('visual_dob', document.getElementById('vizDob').value);
-      fd.append('offline_mode', document.getElementById('offlineSwitch').checked);
-      if(presetMode) fd.append('simulated_preset', presetMode);
+      if(presetType) fd.append('simulated_preset', presetType === 'MULE' ? 'MULE_NETWORK' : presetType);
 
       try {
         const res = await fetch('/api/v1/screen-traveler', { method: 'POST', body: fd });
         const data = await res.json();
-        currentSessionData = data;
 
-        document.getElementById('qScore').innerText = (data.quality_gate?.passed ? "PASS (" : "FAIL (") + (data.quality_gate?.variance_score || 0) + ")";
-        document.getElementById('elaScore').innerText = data.forensics?.ela_anomaly_score + (data.forensics?.tampering_detected ? " [TAMPERED]" : " [CLEAN]");
-        
-        if (data.forensics?.ela_heatmap_b64) {
+        // 1. OCR Extraction (Clip 4)
+        const ocr = data.ocr_extraction?.fields || {};
+        document.getElementById('fName').innerText = ocr.name?.value || "--";
+        document.getElementById('fDoc').innerText = ocr.doc_no?.value || "--";
+        document.getElementById('fDob').innerText = ocr.dob?.value || "--";
+        document.getElementById('fExp').innerText = ocr.expiry?.value || "--";
+
+        // 2. Validation Badges (Clip 5)
+        const b = data.validation_badges;
+        document.getElementById('vFormat').innerText = b.format;
+        document.getElementById('vChecksum').innerText = b.checksum;
+        document.getElementById('vChecksum').className = b.checksum === 'VALID' ? 'font-bold text-emerald-400' : 'font-bold text-red-400';
+        document.getElementById('vExpiry').innerText = b.expiry;
+        document.getElementById('vWatchlist').innerText = b.watchlist;
+        document.getElementById('vWatchlist').className = b.watchlist === 'CLEAR' ? 'font-bold text-emerald-400' : 'font-bold text-red-400';
+
+        // 3. Multi-Model Forensics (Clips 6 & 7)
+        document.getElementById('mEla').innerText = data.forensics.ela_score + (data.forensics.ela_score > 12 ? " [HIGH]" : " [CLEAN]");
+        document.getElementById('mCopyMove').innerText = data.forensics.copy_move.detected ? "CLONES DETECTED" : "CLEAR";
+        document.getElementById('mCopyMove').className = data.forensics.copy_move.detected ? "text-red-400 font-bold mt-1" : "text-zinc-200 font-bold mt-1";
+        document.getElementById('mFont').innerText = data.forensics.font_consistency.anomaly_detected ? "ABNORMAL" : "UNIFORM";
+
+        if(data.forensics.ela_heatmap_b64) {
           document.getElementById('elaPreview').src = data.forensics.ela_heatmap_b64;
         }
 
-        const box = document.getElementById('boxOverlay');
-        if (data.forensics?.bounding_boxes?.length > 0) {
-          box.classList.remove('hidden');
+        // Draw Copy-Move clone vectors on overlay canvas
+        drawCopyMoveVectors(data.forensics.copy_move.vectors);
+
+        // 4. Biometrics (Clip 8)
+        document.getElementById('faceConfidence').innerText = data.biometrics.face_match_confidence + "%";
+
+        // 5. Cross-Doc Identity Graph Visualizer (Clip 9)
+        renderIdentityGraph(data.identity_graph);
+
+        // 6. Explainable Risk Signals
+        document.getElementById('rForensics').innerText = data.explainable_breakdown.tamper_forensic_risk + "/100";
+        document.getElementById('rMrz').innerText = data.explainable_breakdown.format_mrz_risk + "/100";
+        document.getElementById('rGraph').innerText = data.explainable_breakdown.identity_graph_risk + "/100";
+
+        // 7. Decision Triage
+        const tc = document.getElementById('triageCard');
+        const tt = document.getElementById('triageText');
+        const ts = document.getElementById('triageScore');
+        tt.innerText = data.triage.status;
+        ts.innerText = "Composite Risk: " + data.triage.risk_score + " / 100";
+
+        if(data.triage.indicator === 'GREEN') {
+          tc.className = "bg-emerald-950/50 border border-emerald-500 rounded-xl p-4 flex flex-col items-center justify-center text-center gap-1";
+          tt.className = "text-lg font-bold mono text-emerald-400";
         } else {
-          box.classList.add('hidden');
+          tc.className = "bg-red-950/50 border border-red-500 rounded-xl p-4 flex flex-col items-center justify-center text-center gap-1";
+          tt.className = "text-lg font-bold mono text-red-400";
         }
-
-        // VIZ Status
-        if (data.viz_crosscheck) {
-          const vPass = data.viz_crosscheck.cross_check_passed;
-          document.getElementById('vizVerdict').innerText = vPass ? "PASS (100%)" : "DIVERGENCE";
-          document.getElementById('vizVerdict').className = vPass ? "text-emerald-400 font-bold" : "text-red-400 font-bold";
-          document.getElementById('vizMismatchText').innerText = data.viz_crosscheck.discrepancies?.join(", ") || "";
-        }
-
-        // Stamp Status
-        if (data.stamp_forensics?.stamp_detected) {
-          const isStampTampered = data.stamp_forensics.tampering_detected;
-          document.getElementById('stampVerdict').innerText = isStampTampered ? "FORGERY DETECTED" : "GENUINE WET STAMP";
-          document.getElementById('stampVerdict').className = isStampTampered ? "text-red-400 font-bold" : "text-emerald-400 font-bold";
-        } else {
-          document.getElementById('stampVerdict').innerText = "NO STAMP";
-          document.getElementById('stampVerdict').className = "text-zinc-500 font-bold";
-        }
-
-        // Interpol SLTD
-        const interpolBanner = document.getElementById('interpolBanner');
-        if (data.watchlist?.watchlist_hit) {
-          interpolBanner.classList.remove('hidden');
-          document.getElementById('interpolDetails').innerText = `${data.watchlist.alert_type} - ${data.watchlist.details}`;
-          document.getElementById('sltdStatus').innerText = "ALERT HIT";
-          document.getElementById('sltdStatus').className = "text-red-400 font-bold animate-pulse";
-        } else {
-          interpolBanner.classList.add('hidden');
-          document.getElementById('sltdStatus').innerText = "CLEAR";
-          document.getElementById('sltdStatus').className = "text-emerald-400 font-bold";
-        }
-
-        // Triage Status Card
-        const triageCard = document.getElementById('triageCard');
-        const status = document.getElementById('triageStatus');
-        const risk = document.getElementById('riskScore');
-        
-        status.innerText = data.triage_summary.status;
-        risk.innerText = "Risk Score: " + data.triage_summary.overall_risk_score + " / 100";
-
-        if(data.triage_summary.indicator === 'GREEN') {
-          triageCard.className = "bg-emerald-950/40 border border-emerald-500/60 rounded-xl p-4 flex flex-col items-center justify-center text-center gap-1.5";
-          status.className = "text-lg font-bold mono text-emerald-400";
-          playTacticalAudio('CLEAR');
-        } else if (data.triage_summary.indicator === 'AMBER') {
-          triageCard.className = "bg-amber-950/40 border border-amber-500/60 rounded-xl p-4 flex flex-col items-center justify-center text-center gap-1.5";
-          status.className = "text-lg font-bold mono text-amber-400";
-        } else {
-          triageCard.className = "bg-red-950/40 border border-red-500/60 rounded-xl p-4 flex flex-col items-center justify-center text-center gap-1.5";
-          status.className = "text-lg font-bold mono text-red-400";
-          playTacticalAudio('ALERT');
-        }
-
-        // Biometrics
-        document.getElementById('faceScore').innerText = data.biometrics.face_match_score + "%";
-        document.getElementById('muleStatus').innerText = data.biometrics.mule_detection.identity_mule_flag ? "MULE DETECTED" : "CLEAR";
-        document.getElementById('muleStatus').className = data.biometrics.mule_detection.identity_mule_flag ? "text-red-400 font-bold" : "text-emerald-400 font-bold";
-
-        // Audit Hash
-        document.getElementById('auditBox').innerHTML = `
-          <div>SESSION: ${data.session_id.substring(0, 16)}...</div>
-          <div class="text-emerald-400">SHA256: ${data.audit_ledger.doc_sha256}</div>
-          <div class="${data.audit_ledger.sync_status === 'SYNCED' ? 'text-zinc-500' : 'text-amber-400'}">STATE: ${data.audit_ledger.sync_status}</div>
-        `;
-
-        document.getElementById('dossierBtn').disabled = false;
 
       } catch (err) {
-        alert("Screening failed: " + err);
+        alert("Pipeline error: " + err);
       } finally {
-        btn.innerText = "EXECUTE SCREENING";
+        laser.classList.add('hidden');
+        btn.innerText = "RUN MULTI-LAYER SCREENING";
         btn.disabled = false;
       }
     }
 
-    async function triggerBatchSync() {
-      const res = await fetch('/api/v1/batch-sync', { method: 'POST' });
-      const data = await res.json();
-      alert("MERKLE BATCH SYNC:\n" + JSON.stringify(data, null, 2));
+    function drawCopyMoveVectors(vectors) {
+      const c = document.getElementById('overlayCanvas');
+      const ctx = c.getContext('2d');
+      c.width = c.clientWidth; c.height = c.clientHeight;
+      ctx.clearRect(0, 0, c.width, c.height);
+
+      if(!vectors || vectors.length === 0) return;
+
+      ctx.strokeStyle = '#ef4444';
+      ctx.lineWidth = 2;
+      vectors.forEach(v => {
+        const x1 = v.from[0] / 100 * c.width;
+        const y1 = v.from[1] / 100 * c.height;
+        const x2 = v.to[0] / 100 * c.width;
+        const y2 = v.to[1] / 100 * c.height;
+        ctx.beginPath();
+        ctx.arc(x1, y1, 4, 0, Math.PI * 2);
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.arc(x2, y2, 4, 0, Math.PI * 2);
+        ctx.stroke();
+      });
     }
 
-    async function verifyLedgerLive() {
-      if(!currentSessionData) return alert("Execute a scan first.");
-      const res = await fetch('/api/v1/audit/verify/' + currentSessionData.session_id);
-      const data = await res.json();
-      alert("DPDP Cryptographic Proof:\n" + JSON.stringify(data, null, 2));
-    }
+    function renderIdentityGraph(graphData) {
+      const c = document.getElementById('graphCanvas');
+      const ctx = c.getContext('2d');
+      c.width = c.clientWidth; c.height = c.clientHeight;
+      ctx.clearRect(0, 0, c.width, c.height);
 
-    function openDossierModal() {
-      if(!currentSessionData) return;
-      document.getElementById('dosSession').innerText = currentSessionData.session_id.substring(0, 18) + "...";
-      document.getElementById('dosTime').innerText = currentSessionData.audit_ledger.timestamp;
-      document.getElementById('dosRisk').innerText = currentSessionData.triage_summary.overall_risk_score + "/100";
-      document.getElementById('dosDocNum').innerText = currentSessionData.mrz_validation?.passport_number || "IND-SCAN-2026";
-      document.getElementById('dosSummary').innerText = currentSessionData.triage_summary.status;
-      document.getElementById('dosHash').innerText = currentSessionData.audit_ledger.doc_sha256;
-      document.getElementById('dosVerdictBadge').innerText = currentSessionData.triage_summary.indicator;
-      document.getElementById('dosVerdictBadge').className = currentSessionData.triage_summary.indicator === 'RED' ? 'bg-red-950 text-red-400 mono' : 'bg-emerald-950 text-emerald-400 mono';
-      document.getElementById('dossierModal').classList.remove('hidden');
-    }
+      document.getElementById('graphEmpty').style.display = 'none';
+      const status = document.getElementById('graphStatus');
+      
+      if(graphData.graph_detected) {
+        status.innerText = "MULE SYNDICATE FLAGGED";
+        status.className = "text-[10px] mono text-red-400 font-bold";
 
-    function closeDossierModal() {
-      document.getElementById('dossierModal').classList.add('hidden');
-    }
+        // Center Root Node
+        const cx = c.width / 2; const cy = c.height / 2;
+        ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(cx, cy, 7, 0, Math.PI * 2); ctx.fill();
 
-    async function startWebcam(target) {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        const video = document.createElement('video');
-        video.srcObject = stream;
-        video.play();
-        video.onloadedmetadata = () => {
-          setTimeout(() => {
-            const canvas = document.createElement('canvas');
-            canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-            canvas.getContext('2d').drawImage(video, 0, 0);
-            stream.getTracks().forEach(track => track.stop());
-            canvas.toBlob(blob => {
-              const file = new File([blob], target + "_cam.jpg", { type: "image/jpeg" });
-              const dt = new DataTransfer();
-              dt.items.add(file);
-              if (target === 'doc') {
-                document.getElementById('docInput').files = dt.files;
-                document.getElementById('docPreview').src = canvas.toDataURL();
-                document.getElementById('docPreview').style.display = 'block';
-                document.getElementById('noImagePrompt').style.display = 'none';
-              } else {
-                document.getElementById('faceInput').files = dt.files;
-              }
-            }, 'image/jpeg');
-          }, 800);
-        };
-      } catch (err) {
-        alert("Camera error: " + err);
+        // Linked satellite documents
+        const satellites = [
+          {x: cx - 60, y: cy - 25, label: "IND-892"},
+          {x: cx + 60, y: cy - 25, label: "NPL-883"},
+          {x: cx, y: cy + 35, label: "BTN-449"}
+        ];
+
+        ctx.strokeStyle = '#f87171'; ctx.lineWidth = 1.5; ctx.font = '9px monospace';
+        satellites.forEach(s => {
+          ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(s.x, s.y); ctx.stroke();
+          ctx.fillStyle = '#f87171'; ctx.beginPath(); ctx.arc(s.x, s.y, 4, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = '#e4e4e7'; ctx.fillText(s.label, s.x - 18, s.y - 6);
+        });
+
+      } else {
+        status.innerText = "1:1 ISOLATED";
+        status.className = "text-[10px] mono text-emerald-400 font-bold";
+        const cx = c.width / 2; const cy = c.height / 2;
+        ctx.fillStyle = '#10b981'; ctx.beginPath(); ctx.arc(cx, cy, 6, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#34d399'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + 40, cy); ctx.stroke();
+        ctx.fillStyle = '#34d399'; ctx.beginPath(); ctx.arc(cx + 40, cy, 4, 0, Math.PI * 2); ctx.fill();
       }
     }
   </script>
