@@ -27,12 +27,13 @@
       </h1>
     </div>
 
-    <!-- 1-Click Preset Demo Injector for Grand Finale -->
+    <!-- 1-Click Preset Demo Injector -->
     <div class="flex items-center gap-2 bg-zinc-950 px-3 py-1.5 rounded-lg border border-zinc-800">
       <span class="text-[11px] mono text-zinc-400">JURY PRESETS:</span>
-      <button onclick="runPreset('CLEAN')" class="text-xs px-2.5 py-1 bg-emerald-950 text-emerald-300 hover:bg-emerald-900 border border-emerald-800 rounded font-medium">1. Clean Passport</button>
-      <button onclick="runPreset('TAMPERED')" class="text-xs px-2.5 py-1 bg-red-950 text-red-300 hover:bg-red-900 border border-red-800 rounded font-medium">2. Spliced Forgery</button>
-      <button onclick="runPreset('MULE')" class="text-xs px-2.5 py-1 bg-amber-950 text-amber-300 hover:bg-amber-900 border border-amber-800 rounded font-medium">3. Identity Mule</button>
+      <button onclick="runPreset('CLEAN')" class="text-xs px-2.5 py-1 bg-emerald-950 text-emerald-300 hover:bg-emerald-900 border border-emerald-800 rounded font-medium">1. Clean ID</button>
+      <button onclick="runPreset('TAMPERED')" class="text-xs px-2.5 py-1 bg-red-950 text-red-300 hover:bg-red-900 border border-red-800 rounded font-medium">2. Spliced DOB</button>
+      <button onclick="runPreset('VISA_FORGERY')" class="text-xs px-2.5 py-1 bg-purple-950 text-purple-300 hover:bg-purple-900 border border-purple-800 rounded font-medium">3. Fake Visa Stamp</button>
+      <button onclick="runPreset('MULE')" class="text-xs px-2.5 py-1 bg-amber-950 text-amber-300 hover:bg-amber-900 border border-amber-800 rounded font-medium">4. Mule Radar</button>
     </div>
 
     <div class="flex items-center gap-6 text-xs mono text-zinc-400">
@@ -44,46 +45,55 @@
   <!-- Main Grid -->
   <main class="flex-1 p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-[1800px] w-full mx-auto">
     
-    <!-- Left Column: Ingestion & Cameras (4 cols) -->
+    <!-- Left Column: Ingestion & Dual Documents (4 cols) -->
     <div class="lg:col-span-4 flex flex-col gap-5">
       <div class="bg-zinc-900/50 border border-zinc-800 rounded-xl p-5 flex flex-col gap-4">
         <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-400 mono flex items-center justify-between">
           <span>01. Ingestion Control</span>
-          <span class="text-emerald-400">ICAO 9303 / QR</span>
+          <span class="text-emerald-400">DUAL SCAN</span>
         </h2>
 
-        <form id="screenForm" class="flex flex-col gap-4">
+        <form id="screenForm" class="flex flex-col gap-3">
           <div>
             <div class="flex justify-between items-center mb-1">
-              <label class="text-xs font-medium text-zinc-300">Document Scan</label>
-              <button type="button" onclick="startWebcam('doc')" class="text-[10px] text-emerald-400 hover:underline mono">USE SCANNER CAM</button>
+              <label class="text-xs font-medium text-zinc-300">Primary ID / Passport</label>
+              <button type="button" onclick="startWebcam('doc')" class="text-[10px] text-emerald-400 hover:underline mono">SCANNER CAM</button>
             </div>
-            <input type="file" id="docInput" accept="image/*" class="block w-full text-xs text-zinc-400 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-zinc-800 file:text-zinc-200 hover:file:bg-zinc-700 cursor-pointer bg-zinc-950 border border-zinc-800 rounded p-1">
+            <input type="file" id="docInput" accept="image/*" class="block w-full text-xs text-zinc-400 file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-zinc-800 file:text-zinc-200 hover:file:bg-zinc-700 cursor-pointer bg-zinc-950 border border-zinc-800 rounded p-1">
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-zinc-300 mb-1">Visa / Permit Document (With Stamp)</label>
+            <input type="file" id="visaInput" accept="image/*" class="block w-full text-xs text-zinc-400 file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-zinc-800 file:text-zinc-200 hover:file:bg-zinc-700 cursor-pointer bg-zinc-950 border border-zinc-800 rounded p-1">
           </div>
 
           <div>
             <div class="flex justify-between items-center mb-1">
               <label class="text-xs font-medium text-zinc-300">Live Kiosk Camera</label>
-              <button type="button" onclick="startWebcam('face')" class="text-[10px] text-emerald-400 hover:underline mono">USE KIOSK CAM</button>
+              <button type="button" onclick="startWebcam('face')" class="text-[10px] text-emerald-400 hover:underline mono">KIOSK CAM</button>
             </div>
-            <input type="file" id="faceInput" accept="image/*" class="block w-full text-xs text-zinc-400 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-zinc-800 file:text-zinc-200 hover:file:bg-zinc-700 cursor-pointer bg-zinc-950 border border-zinc-800 rounded p-1">
+            <input type="file" id="faceInput" accept="image/*" class="block w-full text-xs text-zinc-400 file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-zinc-800 file:text-zinc-200 hover:file:bg-zinc-700 cursor-pointer bg-zinc-950 border border-zinc-800 rounded p-1">
           </div>
 
-          <div class="grid grid-cols-1 gap-2 pt-1">
+          <div class="grid grid-cols-1 gap-2">
             <label class="block text-xs font-medium text-zinc-300">MRZ Strings</label>
-            <input type="text" id="mrz1" placeholder="Line 1: P<INDTOMAR<<ARYAN..." class="w-full text-xs mono px-3 py-2 bg-zinc-950 border border-zinc-800 rounded focus:border-emerald-500 outline-none text-zinc-200 uppercase">
-            <input type="text" id="mrz2" placeholder="Line 2: Z1234567<8IND080405..." class="w-full text-xs mono px-3 py-2 bg-zinc-950 border border-zinc-800 rounded focus:border-emerald-500 outline-none text-zinc-200 uppercase">
+            <input type="text" id="mrz1" placeholder="Line 1: P<INDTOMAR<<ARYAN..." class="w-full text-xs mono px-3 py-1.5 bg-zinc-950 border border-zinc-800 rounded focus:border-emerald-500 outline-none text-zinc-200 uppercase">
+            <input type="text" id="mrz2" placeholder="Line 2: Z1234567<8IND080405..." class="w-full text-xs mono px-3 py-1.5 bg-zinc-950 border border-zinc-800 rounded focus:border-emerald-500 outline-none text-zinc-200 uppercase">
           </div>
 
           <button type="submit" id="submitBtn" class="w-full text-xs py-2.5 bg-emerald-600 hover:bg-emerald-500 rounded font-semibold text-black tracking-wide mt-1">EXECUTE SCREENING</button>
         </form>
       </div>
 
-      <!-- MRZ Status Block -->
+      <!-- Stamp & MRZ Status Block -->
       <div class="bg-zinc-900/50 border border-zinc-800 rounded-xl p-5 flex flex-col gap-3">
-        <h3 class="text-xs font-semibold uppercase tracking-wider text-zinc-400 mono">02. ICAO 9303 Checksum Gate</h3>
-        <div id="mrzDetails" class="text-xs mono text-zinc-500 space-y-1">
-          Awaiting input scan...
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-zinc-400 mono">02. Stamp & Checksum Gates</h3>
+        <div id="stampDetails" class="text-xs mono text-zinc-400">
+          <div>VISA STAMP: <span id="stampVerdict" class="text-zinc-500 font-bold">AWAITING SCAN</span></div>
+          <div class="text-[11px] text-zinc-500 mt-1">INK BLEED VARIANCE: <span id="stampBleed">--</span></div>
+        </div>
+        <div id="mrzDetails" class="text-xs mono text-zinc-500 border-t border-zinc-800 pt-2 space-y-0.5">
+          MRZ checksums pending...
         </div>
       </div>
     </div>
@@ -94,7 +104,7 @@
         <div class="flex items-center justify-between">
           <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-400 mono">03. Tampering Diagnostics</h2>
           <div class="flex gap-2">
-            <button id="tabDoc" onclick="toggleView('doc')" class="text-xs px-2.5 py-1 bg-zinc-800 text-zinc-200 rounded font-medium">Scanned ID</button>
+            <button id="tabDoc" onclick="toggleView('doc')" class="text-xs px-2.5 py-1 bg-zinc-800 text-zinc-200 rounded font-medium">Document ID</button>
             <button id="tabEla" onclick="toggleView('ela')" class="text-xs px-2.5 py-1 bg-zinc-950 text-zinc-400 rounded font-medium border border-zinc-800">ELA Heatmap</button>
           </div>
         </div>
@@ -121,7 +131,7 @@
       </div>
     </div>
 
-    <!-- Right Column: Triage, Biometrics & Dossier (3 cols) -->
+    <!-- Right Column: Triage & Alarms (3 cols) -->
     <div class="lg:col-span-3 flex flex-col gap-5">
       <div id="triageCard" class="bg-zinc-900/50 border border-zinc-800 rounded-xl p-5 flex flex-col items-center justify-center text-center gap-2">
         <span class="text-xs mono uppercase text-zinc-500 tracking-widest">Triage Action</span>
@@ -146,10 +156,9 @@
           <h3 class="text-xs font-semibold uppercase tracking-wider text-zinc-400 mono">05. Audit Ledger Proof</h3>
           <button onclick="verifyLedgerLive()" class="text-[10px] mono text-emerald-400 hover:underline">VERIFY HASH</button>
         </div>
-        <div id="auditBox" class="text-[10px] mono bg-zinc-950 p-2.5 rounded border border-zinc-800 text-zinc-400 break-all h-24 overflow-y-auto">
+        <div id="auditBox" class="text-[10px] mono bg-zinc-950 p-2 rounded border border-zinc-800 text-zinc-400 break-all h-20 overflow-y-auto">
           No session commit yet.
         </div>
-        <!-- Dossier Export Button -->
         <button id="dossierBtn" onclick="openDossierModal()" disabled class="w-full text-xs py-2 bg-zinc-800 hover:bg-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed rounded font-semibold text-zinc-200 border border-zinc-700 mt-auto">
           GENERATE SSB DOSSIER (PRINT)
         </button>
@@ -158,7 +167,7 @@
 
   </main>
 
-  <!-- Hidden Printable Incident Dossier Modal -->
+  <!-- Dossier Modal -->
   <div id="dossierModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-zinc-900 border border-zinc-700 rounded-xl max-w-xl w-full p-6 text-zinc-100 flex flex-col gap-4">
       <div id="dossierPrintArea" class="space-y-4">
@@ -191,19 +200,56 @@
   <script>
     let currentSessionData = null;
 
+    // Tactical Web Audio API Alert Synthesizer
+    function playTacticalAudio(type) {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        if (type === 'ALERT') {
+          // Double Klaxon High Pitch Alert for Critical Forgery
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.35);
+          gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+          gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.35);
+        } else {
+          // Low Gentle Chirp for Auto-Clear Pass
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(520, audioCtx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(1040, audioCtx.currentTime + 0.15);
+          gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+          gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.15);
+        }
+      } catch(e) {}
+    }
+
     function runPreset(type) {
-      // Create lightweight synthetic SVG dummy document
       const canvas = document.createElement('canvas');
       canvas.width = 400; canvas.height = 260;
       const ctx = canvas.getContext('2d');
-      ctx.fillStyle = type === 'TAMPERED' ? '#451a1a' : '#1e293b';
+      ctx.fillStyle = type === 'TAMPERED' || type === 'VISA_FORGERY' ? '#451a1a' : '#1e293b';
       ctx.fillRect(0, 0, 400, 260);
       ctx.fillStyle = '#ffffff'; ctx.font = '16px monospace';
-      ctx.fillText("REPUBLIC OF INDIA - PASSPORT", 30, 40);
+      ctx.fillText("REPUBLIC OF INDIA - TRAVEL PERMIT", 30, 40);
       ctx.font = '12px monospace';
       ctx.fillText("NAME: ARYAN TOMAR", 30, 90);
-      ctx.fillText(type === 'TAMPERED' ? "DOB: 12/05/1998 [MODIFIED]" : "DOB: 05/04/2008", 30, 120);
-      ctx.fillText("PASSPORT: P8921443", 30, 150);
+      ctx.fillText(type === 'TAMPERED' ? "DOB: 12/05/1998 [FORGED]" : "DOB: 05/04/2008", 30, 120);
+      ctx.fillText("DOC: Z1234567", 30, 150);
+
+      // Draw synthetic purple visa consular stamp on canvas
+      ctx.strokeStyle = '#8b5cf6'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(320, 180, 45, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = '#8b5cf6'; ctx.font = '9px monospace';
+      ctx.fillText("IMMIGRATION", 290, 175);
+      ctx.fillText("SSB CHECKED", 290, 190);
 
       canvas.toBlob(blob => {
         const file = new File([blob], "preset_doc.jpg", { type: "image/jpeg" });
@@ -232,13 +278,11 @@
       const tabDoc = document.getElementById('tabDoc');
       const tabEla = document.getElementById('tabEla');
       if(mode === 'doc') {
-        doc.classList.remove('hidden');
-        ela.classList.add('hidden');
+        doc.classList.remove('hidden'); ela.classList.add('hidden');
         tabDoc.className = "text-xs px-2.5 py-1 bg-zinc-800 text-zinc-200 rounded font-medium";
         tabEla.className = "text-xs px-2.5 py-1 bg-zinc-950 text-zinc-400 rounded font-medium border border-zinc-800";
       } else {
-        doc.classList.add('hidden');
-        ela.classList.remove('hidden');
+        doc.classList.add('hidden'); ela.classList.remove('hidden');
         tabEla.className = "text-xs px-2.5 py-1 bg-zinc-800 text-zinc-200 rounded font-medium";
         tabDoc.className = "text-xs px-2.5 py-1 bg-zinc-950 text-zinc-400 rounded font-medium border border-zinc-800";
       }
@@ -260,11 +304,14 @@
 
     async function executeScreening(presetMode) {
       const btn = document.getElementById('submitBtn');
-      btn.innerText = "RUNNING FAIL-FAST PIPELINE...";
+      btn.innerText = "SCREENING PIPELINE RUNNING...";
       btn.disabled = true;
 
       const fd = new FormData();
       fd.append('document_image', document.getElementById('docInput').files[0]);
+      if(document.getElementById('visaInput').files[0]) {
+        fd.append('visa_image', document.getElementById('visaInput').files[0]);
+      }
       if(document.getElementById('faceInput').files[0]) {
         fd.append('live_face_image', document.getElementById('faceInput').files[0]);
       }
@@ -292,7 +339,19 @@
           box.classList.add('hidden');
         }
 
-        // Triage Status Card
+        // Stamp Forensics Readout
+        if (data.stamp_forensics?.stamp_detected) {
+          const isStampTampered = data.stamp_forensics.tampering_detected;
+          document.getElementById('stampVerdict').innerText = isStampTampered ? "FORGERY DETECTED" : "GENUINE WET STAMP";
+          document.getElementById('stampVerdict').className = isStampTampered ? "text-red-400 font-bold" : "text-emerald-400 font-bold";
+          document.getElementById('stampBleed').innerText = data.stamp_forensics.ink_bleed_variance + " (Edge: " + data.stamp_forensics.edge_artifact_score + ")";
+        } else {
+          document.getElementById('stampVerdict').innerText = "NO VISIBLE STAMP";
+          document.getElementById('stampVerdict').className = "text-zinc-500 font-bold";
+          document.getElementById('stampBleed').innerText = "--";
+        }
+
+        // Triage Status Card & Tactical Audio Feedback
         const triageCard = document.getElementById('triageCard');
         const status = document.getElementById('triageStatus');
         const risk = document.getElementById('riskScore');
@@ -303,21 +362,22 @@
         if(data.triage_summary.indicator === 'GREEN') {
           triageCard.className = "bg-emerald-950/40 border border-emerald-500/60 rounded-xl p-5 flex flex-col items-center justify-center text-center gap-2";
           status.className = "text-xl font-bold mono text-emerald-400";
+          playTacticalAudio('CLEAR');
         } else if (data.triage_summary.indicator === 'AMBER') {
           triageCard.className = "bg-amber-950/40 border border-amber-500/60 rounded-xl p-5 flex flex-col items-center justify-center text-center gap-2";
           status.className = "text-xl font-bold mono text-amber-400";
         } else {
           triageCard.className = "bg-red-950/40 border border-red-500/60 rounded-xl p-5 flex flex-col items-center justify-center text-center gap-2";
           status.className = "text-xl font-bold mono text-red-400";
+          playTacticalAudio('ALERT');
         }
 
         // MRZ Status
         if(data.mrz_validation?.parsed !== false && data.mrz_validation?.passport_number) {
           const isV = data.mrz_validation.valid;
           document.getElementById('mrzDetails').innerHTML = `
-            <div class="text-zinc-300">DOC NO: ${data.mrz_validation.passport_number}</div>
-            <div class="text-zinc-300">DOB: ${data.mrz_validation.dob}</div>
-            <div class="${isV ? 'text-emerald-400' : 'text-red-400'} font-bold">CHECKSUM: ${isV ? '100% VALIDATED' : 'FAILED / TAMPERED DOB'}</div>
+            <div class="text-zinc-300">DOC: ${data.mrz_validation.passport_number} | DOB: ${data.mrz_validation.dob}</div>
+            <div class="${isV ? 'text-emerald-400' : 'text-red-400'} font-bold">CHECKSUM: ${isV ? '100% VALID' : 'TAMPERED / CHECKSUM MISMATCH'}</div>
           `;
         } else {
           document.getElementById('mrzDetails').innerText = "Manual Review / Non-MRZ Document";
@@ -338,7 +398,7 @@
         document.getElementById('dossierBtn').disabled = false;
 
       } catch (err) {
-        alert("Scan processing failed: " + err);
+        alert("Screening processing failed: " + err);
       } finally {
         btn.innerText = "EXECUTE SCREENING";
         btn.disabled = false;

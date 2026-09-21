@@ -9,12 +9,13 @@ from app.engine.quality import QualityGate
 from app.engine.forensics import ForensicsEngine
 from app.engine.mrz import MRZValidator
 from app.engine.biometrics import BiometricsEngine
+from app.engine.stamp_forensics import VisaStampForensics
 from app.core.crypto_audit import CryptoAuditLogger
 
 app = FastAPI(
     title="SeemaDrishti - Border Security Core API",
-    description="Automated AI fake document, forensic tampering and biometric verification engine for SSB border checkposts.",
-    version="2.2.0"
+    description="Automated AI fake document, stamp forensics and biometric verification engine for SSB border checkposts.",
+    version="2.3.0"
 )
 
 app.add_middleware(
@@ -28,6 +29,7 @@ app.add_middleware(
 quality_gate = QualityGate()
 forensics = ForensicsEngine()
 biometrics = BiometricsEngine()
+stamp_forensics = VisaStampForensics()
 
 TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), "templates", "dashboard.html")
 
@@ -55,6 +57,7 @@ def verify_audit_ledger(session_id: str):
 @app.post("/api/v1/screen-traveler")
 async def screen_traveler(
     document_image: UploadFile = File(...),
+    visa_image: Optional[UploadFile] = File(None),
     live_face_image: Optional[UploadFile] = File(None),
     mrz_line1: Optional[str] = Form(None),
     mrz_line2: Optional[str] = Form(None),
@@ -67,18 +70,17 @@ async def screen_traveler(
     if simulated_preset == "TAMPERED":
         q_res = {"passed": True, "variance_score": 182.4, "reason": "Clear"}
         mrz_res = {
-            "valid": False,
-            "type": "ICAO_TD3_PASSPORT",
-            "passport_number": "P8921443",
-            "dob": "980512",
-            "checksums_passed": {"passport": True, "dob": False, "expiry": True}
+            "valid": False, "type": "ICAO_TD3_PASSPORT", "passport_number": "P8921443",
+            "dob": "980512", "checksums_passed": {"passport": True, "dob": False, "expiry": True}
         }
         f_res = forensics.compute_ela_score(doc_bytes)
         f_res["tampering_detected"] = True
         f_res["ela_anomaly_score"] = 24.8
         f_res["bounding_boxes"] = [{"label": "Spliced Photo Boundary & Tampered DOB", "box": [22, 12, 68, 48]}]
+        stamp_res = {"stamp_detected": False, "tampering_detected": False, "status": "N/A"}
         face_score = 88.0
         mule_res = {"identity_mule_flag": False}
+
     elif simulated_preset == "MULE":
         q_res = {"passed": True, "variance_score": 164.0, "reason": "Clear"}
         mrz_res = MRZValidator.validate_type3_passport(
@@ -87,14 +89,32 @@ async def screen_traveler(
         )
         f_res = forensics.compute_ela_score(doc_bytes)
         f_res["tampering_detected"] = False
+        stamp_res = {"stamp_detected": False, "tampering_detected": False, "status": "N/A"}
         face_score = 94.2
         mule_res = {
-            "identity_mule_flag": True,
-            "matched_records_count": 2,
+            "identity_mule_flag": True, "matched_records_count": 2,
             "flagged_matches": [{"suspect_id": "WL-IND-2023-A09", "similarity": 0.912}]
         }
+
+    elif simulated_preset == "VISA_FORGERY":
+        q_res = {"passed": True, "variance_score": 195.0, "reason": "Clear"}
+        mrz_res = MRZValidator.validate_type3_passport(
+            "P<INDKACHER<<ARYAN<<<<<<<<<<<<<<<<<<<<<<<<<<",
+            "Z1234567<8IND0804051M2809214<<<<<<<<<<<<<<0"
+        )
+        f_res = forensics.compute_ela_score(doc_bytes)
+        stamp_res = {
+            "stamp_detected": True,
+            "tampering_detected": True,
+            "ink_bleed_variance": 198.4,
+            "edge_artifact_score": 182.2,
+            "status": "FORGED_DIGITAL_STAMP (UNNATURAL INK GRADIENT)"
+        }
+        face_score = 95.0
+        mule_res = {"identity_mule_flag": False}
+
     else:
-        # Standard Execution Pipeline
+        # Standard Dynamic Execution Pipeline
         q_res = quality_gate.evaluate(doc_bytes)
         if not q_res["passed"]:
             return {
@@ -110,6 +130,10 @@ async def screen_traveler(
 
         f_res = forensics.compute_ela_score(doc_bytes)
 
+        # Visa / Stamp Forensics check
+        stamp_bytes = await visa_image.read() if visa_image else doc_bytes
+        stamp_res = stamp_forensics.analyze_stamp_authenticity(stamp_bytes)
+
         face_score = 92.5
         mule_res = {"identity_mule_flag": False}
         if live_face_image:
@@ -120,12 +144,14 @@ async def screen_traveler(
 
     # Weighted Risk Scoring
     forensic_risk = 75.0 if f_res.get("tampering_detected") else 8.0
+    stamp_risk = 85.0 if stamp_res.get("tampering_detected") else 0.0
     mrz_risk = 0.0 if mrz_res.get("valid", True) else 85.0
     bio_risk = (100.0 - face_score) if face_score < 70.0 else 5.0
     if mule_res.get("identity_mule_flag"):
         bio_risk += 60.0
 
-    total_risk = round(0.4 * forensic_risk + 0.3 * mrz_risk + 0.3 * bio_risk, 2)
+    # 35% Doc Forensics, 20% Stamp, 25% MRZ, 20% Biometrics
+    total_risk = round(0.35 * forensic_risk + 0.20 * stamp_risk + 0.25 * mrz_risk + 0.20 * bio_risk, 2)
 
     if total_risk < 25.0:
         triage = "AUTO_CLEAR"
@@ -150,6 +176,7 @@ async def screen_traveler(
         "quality_gate": q_res,
         "mrz_validation": mrz_res,
         "forensics": f_res,
+        "stamp_forensics": stamp_res,
         "biometrics": {
             "face_match_score": face_score,
             "mule_detection": mule_res
